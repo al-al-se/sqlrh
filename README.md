@@ -32,5 +32,5 @@ docker container within asp.net app with resources:
   * report templates
   * sqlite database file
   * database connection configs and keys
-* network for wab api
+* network for web api
 * network for database connection
