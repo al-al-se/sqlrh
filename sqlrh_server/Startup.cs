@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace sqlrh_server
 {
@@ -26,7 +27,9 @@ namespace sqlrh_server
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-
+            string connection = Configuration.GetConnectionString("DefaultConnection");
+            services.AddDbContext<ReportContext>(options => options.UseSqlite(connection));
+            
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
