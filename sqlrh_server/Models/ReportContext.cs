@@ -28,4 +28,12 @@ public class ReportContext : DbContext, IReportRepository
         SaveChanges();
         return n;
     }
+
+    public Report LoadFile(int id, string path)
+    {
+       var r =  Reports.First(r => r.Id == id);
+       r.FilePath = path;
+       SaveChanges();
+       return r;
+    }
 }
