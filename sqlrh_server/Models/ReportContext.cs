@@ -1,8 +1,11 @@
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
  
-public class ReportContext : DbContext
+public class ReportContext : DbContext, IReportRepository
 {
-    public DbSet<Report> Reports { get; set; }
+    private DbSet<Report> Reports { get; set; }
+
+    public IEnumerable<Report> All => Reports;
 
     public ReportContext(DbContextOptions<ReportContext> options)
         : base(options)

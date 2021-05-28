@@ -29,7 +29,8 @@ namespace sqlrh_server
         {
             string connection = Configuration.GetConnectionString("DefaultConnection");
             services.AddDbContext<ReportContext>(options => options.UseSqlite(connection));
-            
+            services.AddTransient<IReportRepository,ReportContext>();
+                   
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {

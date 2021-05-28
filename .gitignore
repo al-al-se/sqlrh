@@ -348,3 +348,6 @@ MigrationBackup/
 
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
+sqlrh_server/ReportsDev.db
+sqlrh_server/ReportsDev.db-shm
+sqlrh_server/ReportsDev.db-wal
