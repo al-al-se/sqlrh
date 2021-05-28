@@ -1,12 +1,17 @@
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
  
 public class ReportContext : DbContext, IReportRepository
 {
     private DbSet<Report> Reports { get; set; }
 
-    public IEnumerable<Report> All => Reports;
+    public  async Task<IEnumerable<Report>> GetAll()
+    {
+        var r = await Reports.ToListAsync();
+        return r;
+    }
 
     public ReportContext(DbContextOptions<ReportContext> options)
         : base(options)
@@ -19,21 +24,21 @@ public class ReportContext : DbContext, IReportRepository
         modelBuilder.Entity<Report>().ToTable("Reports");
     }
 
-    public Report Add(string name)
+    public async Task<Report> Add(string name)
     {
-        int c = Reports.Count();
+        int c = await Reports.CountAsync();
         // sqlite has not sequences
         // collision unlikely
-        var n = Reports.Add(new Report() {Id = c + 1, Name = name}).Entity;
-        SaveChanges();
+        var n = ( await Reports.AddAsync(new Report() {Id = c + 1, Name = name})).Entity;
+        await SaveChangesAsync();
         return n;
     }
 
-    public Report LoadFile(int id, string path)
+    public async Task<Report> LoadFile(int id, string path)
     {
-       var r =  Reports.First(r => r.Id == id);
+       var r =  await Reports.FirstAsync(r => r.Id == id);
        r.FilePath = path;
-       SaveChanges();
+       await SaveChangesAsync();
        return r;
     }
 }

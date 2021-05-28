@@ -1,10 +1,11 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 public interface IReportRepository
 {
-    IEnumerable<Report> All { get; }
+    Task<IEnumerable<Report>> GetAll();
 
-    Report Add(string name);
+    Task<Report> Add(string name);
 
-    Report LoadFile(int id, string path);
+    Task<Report> LoadFile(int id, string path);
 }

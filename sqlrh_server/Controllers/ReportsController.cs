@@ -26,33 +26,38 @@ namespace sqlrh_server.Controllers
 
         [Route("GetAll")]
         [HttpGet]
-        public IEnumerable<Report> GetAll()
+        public async Task<IEnumerable<Report>> GetAll()
         {
-            return _repository.All;
+            return await _repository.GetAll();
         }
 
         [Route("AddNew")]
         [HttpPost]
-        public ActionResult AddNew(string name)
+        public async Task<IActionResult> AddNew(string name)
         {
-            return new  CreatedResult(name, _repository.Add(name));
+            return new  CreatedResult(name, await _repository.Add(name));
         }
 
         [Route("LoadFile")]
         [HttpPost]
-        public ActionResult LoadFile(int id, IFormFile f)
+        public async Task<IActionResult> LoadFile(int id, IFormFile uploadingFile)
         {
-            string path =   "./Files/" + f.FileName;
-                
-            using (var fileStream = 
-                new FileStream(path, FileMode.Create))
+            if (uploadingFile != null)
             {
-                f.CopyTo(fileStream);
+                string path =   "./Files/" + uploadingFile.FileName;
+                    
+                using (var fileStream = 
+                    new FileStream(path, FileMode.Create))
+                {
+                   await  uploadingFile.CopyToAsync(fileStream);
+                }
+
+                var r =  await _repository.LoadFile(id,path);
+
+                return new  CreatedResult(r.Name, r);
+            } else {
+                return new  BadRequestResult();
             }
-
-            var r = _repository.LoadFile(id,path);
-
-            return new  CreatedResult(r.Name, r);
         }
     }
 }
