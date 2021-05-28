@@ -30,8 +30,11 @@ namespace sqlrh_server
             string connection = Configuration.GetConnectionString("DefaultConnection");
             services.AddDbContext<ReportContext>(options => options.UseSqlite(connection));
             services.AddTransient<IReportRepository,ReportContext>();
+
+            string FileStoragePath = Configuration.GetValue<string>("FileStoragePath");
                    
             services.AddControllers();
+
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "sqlrh_server", Version = "v1" });

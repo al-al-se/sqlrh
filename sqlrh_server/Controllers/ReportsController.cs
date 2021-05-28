@@ -44,7 +44,7 @@ namespace sqlrh_server.Controllers
         {
             if (uploadingFile != null)
             {
-                string path =   "./Files/" + uploadingFile.FileName;
+                string path =   System.IO.Path.Combine(,uploadingFile.FileName);
                     
                 using (var fileStream = 
                     new FileStream(path, FileMode.Create))
