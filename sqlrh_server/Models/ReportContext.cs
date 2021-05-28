@@ -22,6 +22,8 @@ public class ReportContext : DbContext, IReportRepository
     public Report Add(string name)
     {
         int c = Reports.Count();
+        // sqlite has not sequences
+        // collision unlikely
         var n = Reports.Add(new Report() {Id = c + 1, Name = name}).Entity;
         SaveChanges();
         return n;
