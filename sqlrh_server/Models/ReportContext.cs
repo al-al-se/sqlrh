@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
+using System.Linq;
  
 public class ReportContext : DbContext, IReportRepository
 {
@@ -16,5 +17,13 @@ public class ReportContext : DbContext, IReportRepository
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Report>().ToTable("Reports");
+    }
+
+    public Report Add(string name)
+    {
+        int c = Reports.Count();
+        var n = Reports.Add(new Report() {Id = c + 1, Name = name}).Entity;
+        SaveChanges();
+        return n;
     }
 }
