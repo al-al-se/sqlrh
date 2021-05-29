@@ -34,7 +34,7 @@ namespace sqlrh_server
             services.Configure<ReportBuilderOptions>(Configuration.GetSection(
                                         ReportBuilderOptions.SectionName));
                                         
-            services.AddTransient<IReportBuilder,ReportBuilder>();
+            services.AddTransient<IReportBuilderService,ReportBuilderService>();
                    
             services.AddControllers();
 

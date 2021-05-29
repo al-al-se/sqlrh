@@ -17,11 +17,11 @@ namespace sqlrh_server.Controllers
 
         private readonly IReportRepository _repository;
 
-        private readonly IReportBuilder _builder;
+        private readonly IReportBuilderService _builder;
 
         public ReportsController(ILogger<ReportsController> logger,
                                  IReportRepository r,
-                                 IReportBuilder b)
+                                 IReportBuilderService b)
         {
             _logger = logger;
             _repository = r;
