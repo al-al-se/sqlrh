@@ -31,7 +31,10 @@ namespace sqlrh_server
             services.AddDbContext<ReportContext>(options => options.UseSqlite(connection));
             services.AddTransient<IReportRepository,ReportContext>();
 
-            string FileStoragePath = Configuration.GetValue<string>("FileStoragePath");
+            services.Configure<ReportBuilderOptions>(Configuration.GetSection(
+                                        ReportBuilderOptions.SectionName));
+                                        
+            services.AddTransient<IReportBuilder,ReportBuilder>();
                    
             services.AddControllers();
 

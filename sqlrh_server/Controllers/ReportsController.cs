@@ -2,7 +2,6 @@ using System.Data.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -18,10 +17,15 @@ namespace sqlrh_server.Controllers
 
         private readonly IReportRepository _repository;
 
-        public ReportsController(ILogger<ReportsController> logger, IReportRepository r)
+        private readonly IReportBuilder _builder;
+
+        public ReportsController(ILogger<ReportsController> logger,
+                                 IReportRepository r,
+                                 IReportBuilder b)
         {
             _logger = logger;
             _repository = r;
+            _builder = b;
         }
 
         [Route("GetAll")]
@@ -44,20 +48,15 @@ namespace sqlrh_server.Controllers
         {
             if (uploadingFile != null)
             {
-                string path =   System.IO.Path.Combine(,uploadingFile.FileName);
-                    
-                using (var fileStream = 
-                    new FileStream(path, FileMode.Create))
+                string path = await _builder.SaveUploadingReportTemplate(uploadingFile);
+                if ( path != null)
                 {
-                   await  uploadingFile.CopyToAsync(fileStream);
+                    var r =  await _repository.LoadFile(id,path);
+                    return new  CreatedResult(r.Name, r);
                 }
+            } 
 
-                var r =  await _repository.LoadFile(id,path);
-
-                return new  CreatedResult(r.Name, r);
-            } else {
-                return new  BadRequestResult();
-            }
+            return new  BadRequestResult();
         }
     }
 }
