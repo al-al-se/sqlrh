@@ -82,6 +82,10 @@ namespace sqlrh_server.Controllers
 
             switch(ext)
             {
+                case ".odt" : return "application/vnd.oasis.opendocument.text";
+                case ".docx" : return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+                case ".html" : return "text/html";
+                case ".md" : return "text/markdown";
                 default: return "text/plain";
             }
         }

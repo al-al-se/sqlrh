@@ -27,11 +27,11 @@ class ReportBuilderService : IReportBuilderService
 
     protected string PrepareTempPath()
     {
-        if (!string.IsNullOrEmpty(_options.FileStoragePath))
+        if (!string.IsNullOrEmpty(_options.TempPath))
         {
-            if (Directory.Exists(_options.FileStoragePath))
+            if (Directory.Exists(_options.TempPath))
             {
-                return  _options.FileStoragePath;
+                return  _options.TempPath;
             }
         }
 
@@ -69,27 +69,28 @@ class ReportBuilderService : IReportBuilderService
 
     public string StartReportBuilding(string reportTemplatePath)
     {
-        string name = Path.GetFileName(reportTemplatePath);
+        string name = Path.GetFileNameWithoutExtension(reportTemplatePath);
         string ext = Path.GetExtension(reportTemplatePath);
         string reportName = $"{name}_{DateTime.Now.ToString("yyyyMMdd_hhmmss")}{ext}";
         string fullReportName = Path.Combine(TempPath,reportName);
         string fullTempName = GetTemp(fullReportName);
 
-        var t = GetBuilder(ext).Build(reportTemplatePath,fullTempName);
-        t.ContinueWith(tr => File.Move(fullTempName,fullReportName));
-        t.Start();
-
+        GetBuilder(ext)
+            .Build(reportTemplatePath,fullTempName)
+                .ContinueWith(tr => File.Move(fullTempName,fullReportName));
+     
         return fullReportName;
     }
 
-    protected string GetTemp(string f)
+    public static string GetTemp(string f)
     {
         return $"{f}.tmp";
     }
+    
 
     public bool CheckReportStartBuilding(string reportPath)
     {
-        return File.Exists(GetTemp(reportPath));
+        return File.Exists(GetTemp(reportPath)) || File.Exists(reportPath);
     }
 
     public bool CheckReportFinished(string reportPath)
