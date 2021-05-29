@@ -8,4 +8,10 @@ public interface IReportBuilderService
     string TempPath {get; init;}
 
     Task<string> SaveUploadingReportTemplate(IFormFile uploadingFile);
+
+    string StartReportBuilding(string reportTemplatePath);
+
+    bool CheckReportStartBuilding(string reportPath);
+
+    bool CheckReportFinished(string reportPath);
 }

@@ -48,15 +48,57 @@ namespace sqlrh_server.Controllers
         {
             if (uploadingFile != null)
             {
-                string path = await _builder.SaveUploadingReportTemplate(uploadingFile);
-                if ( path != null)
+                if (await _repository.ContainsId(id))
                 {
-                    var r =  await _repository.LoadFile(id,path);
-                    return new  CreatedResult(r.Name, r);
+                    string path = await _builder.SaveUploadingReportTemplate(uploadingFile);
+                    if ( path != null)
+                    {
+                        var r =  await _repository.LoadFile(id,path);
+                        return new  CreatedResult(r.Name, r);
+                    }
                 }
             } 
 
             return new  BadRequestResult();
+        }
+
+        [Route("Execute")]
+        [HttpPost]
+        public async Task<IActionResult> Execute(int id)
+        {
+            if (await _repository.ContainsId(id))
+            {
+                var r = await _repository.GetReport(id);
+                var dest = _builder.StartReportBuilding(r.FilePath);
+
+                return new  CreatedResult(r.Name, dest);
+            }
+            return new  NotFoundResult();
+        }
+
+        string MimeType(string path)
+        {
+            string ext = System.IO.Path.GetExtension(path);
+
+            switch(ext)
+            {
+                default: return "text/plain";
+            }
+        }
+
+        [Route("GetBuildedReport")]
+        [HttpPost]
+        public IActionResult GetBuildedReport(string path)
+        {
+            if (_builder.CheckReportStartBuilding(path))
+            {
+                if (_builder.CheckReportFinished(path))
+                {
+                    return new PhysicalFileResult(path,MimeType(path));
+                }
+                return new StatusCodeResult(102);//102 Processing («идёт обработка»);
+            }
+            return new NotFoundResult();
         }
     }
 }

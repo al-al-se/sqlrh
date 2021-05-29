@@ -34,9 +34,19 @@ public class ReportContext : DbContext, IReportRepository
         return n;
     }
 
+    public async Task<bool> ContainsId(int id)
+    {
+        return await Reports.AnyAsync(r => r.Id == id);
+    }
+
+    public async Task<Report> GetReport(int id)
+    {
+        return await Reports.FirstAsync(r => r.Id == id);
+    }
+
     public async Task<Report> LoadFile(int id, string path)
     {
-       var r =  await Reports.FirstAsync(r => r.Id == id);
+       var r =  await GetReport(id);
        r.FilePath = path;
        await SaveChangesAsync();
        return r;

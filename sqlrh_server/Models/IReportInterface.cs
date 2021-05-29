@@ -7,5 +7,9 @@ public interface IReportRepository
 
     Task<Report> Add(string name);
 
+    Task<bool> ContainsId(int id);
+
+    Task<Report> GetReport(int id);
+
     Task<Report> LoadFile(int id, string path);
 }
