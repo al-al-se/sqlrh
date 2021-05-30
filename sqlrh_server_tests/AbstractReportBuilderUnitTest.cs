@@ -14,13 +14,25 @@ namespace sqlrh_server_tests
 
             TxtReportBuilder tb = new TxtReportBuilder(dbMock.Object);
 
-            var srcMock = new Mock<TextReader>();
-            var dstMock = new Mock<TextWriter>();
+            string srcFileName = Path.Combine(Directory.GetCurrentDirectory(),"src.txt");
+            File.Create(srcFileName);
 
-            tb.OpenFilesForMock(srcMock,dstMock);
+            var src = new StreamReader(srcFileName);
+            var dst = new StringWriter();
+
+            tb.OpenFilesForMock(src,dst);
 
             int val = 12;
             tb.WriteScalar(val,":d");
+
+            string obtained_result = dst.ToString();
+
+            src.Close();
+            File.Delete(srcFileName);
+
+            string expected_result = "12";
+
+            Assert.Equal(obtained_result,expected_result);
         }
     }
 }

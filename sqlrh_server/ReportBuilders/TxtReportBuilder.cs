@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 public class TxtReportBuilder : AbstractReportBuilder
 {
-    TextReader source;
+    StreamReader source;
     TextWriter destination;
 
     public TxtReportBuilder(IExternalDataBaseRepository r) : base(r)
@@ -22,7 +22,7 @@ public class TxtReportBuilder : AbstractReportBuilder
         destination = new StreamWriter(reportPath);
     }
 
-    public void OpenFilesForMock(TextReader src, TextWriter dst)
+    public void OpenFilesForMock(StreamReader src, TextWriter dst)
     {
         source = src;
         destination = dst;
