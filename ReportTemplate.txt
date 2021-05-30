@@ -1,0 +1,8 @@
+Report
+
+Table A:
+<rt db1 select * from table_a>
+
+row count <rn db1 select count(*) from table_a>
+
+max value <rs db1 select name, value from table_a where value = (select max(value) from table_a)>

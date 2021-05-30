@@ -28,8 +28,12 @@ namespace sqlrh_server
         public void ConfigureServices(IServiceCollection services)
         {
             string connection = Configuration.GetConnectionString("DefaultConnection");
+
             services.AddDbContext<ReportContext>(options => options.UseSqlite(connection));
             services.AddTransient<IReportRepository,ReportContext>();
+
+            services.AddDbContext<ExternalDataBaseContext>(options => options.UseSqlite(connection));
+            services.AddTransient<IExternalDataBaseRepository,ExternalDataBaseContext>();
 
             services.Configure<ReportBuilderOptions>(Configuration.GetSection(
                                         ReportBuilderOptions.SectionName));
