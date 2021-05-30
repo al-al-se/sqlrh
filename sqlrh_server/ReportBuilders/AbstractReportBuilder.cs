@@ -1,18 +1,28 @@
 using System.Data;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using System.IO;
 public abstract class AbstractReportBuilder : IReportBuilder
 {
+    public IExternalDataBaseRepository DataBases {get; set;}
+     public AbstractReportBuilder(IExternalDataBaseRepository r)
+     {
+        DataBases = r;
+     }
+
     // sql query in report template:
     protected virtual string OpeningTag() => "<<sqlrh";
     
     protected virtual string Delim() => " ";//delim
 
     // returning value type
-    protected virtual string TableSign() => "t";
+    protected const string TableSign = "t";
 
 
-    protected virtual string ScalarIntSign() => "i";
+    protected const string ScalarIntSign = "si";
+
+    protected const string ScalarStringSign = "svc";
 
     //delim
 
@@ -32,12 +42,22 @@ public abstract class AbstractReportBuilder : IReportBuilder
     protected Regex EndRegex()
         => new Regex($"{Delim()}{ClosingTag()}"); 
 
-    protected virtual IEnumerable<string> PrintDataTable(DataTable dt)
+    Task Build(string templatePth, string reportPath)
     {
-        List<string> result = new List<string>();
-        // fill list
-        return result;
+        return new Task(() => BuildSync(templatePth,reportPath));
     }
+
+    void BuildSync(string templatePth, string reportPath)
+    {
+            using (Stream source = File.Open(templatePth, FileMode.Open))
+            {
+                using(Stream destination = File.Create(reportPath))
+                {
+                    string line;
+                }
+            }
+    }
+
 
     protected virtual IEnumerable<string> ExecuteQuery(string query)
     {
@@ -53,13 +73,29 @@ public abstract class AbstractReportBuilder : IReportBuilder
 
         string alias = query.Substring(pos2,pos2 + match2.Index);
 
+        var task =  DataBases.GetConnectionString(alias);
+        task.RunSynchronously();
+        string connectionString = task.Result;
+
         int pos3 = match2.Index + Delim().Length;
 
         string sqlQuery = query.Substring(pos3);
 
-        if (valueType == TableSign()) 
+        switch (valueType) 
         {
-            return PrintDataTable(SQLQueryExecutor.ExecuteReader()); 
+            case TableSign:
+                var dt = SQLQueryExecutor.ExecuteReader(connectionString,sqlQuery);
+                return PrintDataTable(dt); 
+            default:
+                var res = SQLQueryExecutor.ExecuteScalar(connectionString,sqlQuery);
+                return new List<string>() {res.ToString()};
         }
+    }
+
+    protected virtual IEnumerable<string> PrintDataTable(DataTable dt)
+    {
+        List<string> result = new List<string>();
+        // fill list
+        return result;
     }
 }
