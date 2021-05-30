@@ -4,9 +4,9 @@ class TrivialReportBuilder : IReportBuilder
 {
     public IExternalDataBaseRepository DataBases {get; set;}
 
-    public void Build(string trmplatePth, string reportPath)
+    public void Build(string templatePath, string reportPath)
     {
-                  using (Stream source = File.Open(templatePth, FileMode.Open))
+                  using (Stream source = File.Open(templatePath, FileMode.Open))
             {
                 using(Stream destination = File.Create(reportPath))
                 {
@@ -15,9 +15,9 @@ class TrivialReportBuilder : IReportBuilder
             }
     }
 
-    public async Task BuildAsync(string templatePth, string reportPath)
+    public async Task BuildAsync(string templatePath, string reportPath)
     {
-          using (Stream source = File.Open(templatePth, FileMode.Open))
+          using (Stream source = File.Open(templatePath, FileMode.Open))
             {
                 using(Stream destination = File.Create(reportPath))
                 {

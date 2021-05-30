@@ -1,8 +1,8 @@
+using System;
 using System.Data;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using System.IO;
 using System.Text;
 public abstract class AbstractReportBuilder : IReportBuilder
 {
@@ -60,80 +60,129 @@ public abstract class AbstractReportBuilder : IReportBuilder
         DataBases = r;
      }
 
-    Task Build(string templatePth, string reportPath)
+    public Task BuildAsync(string templatePth, string reportPath)
     {
-        return new Task(() => BuildSync(templatePth,reportPath));
+        return new Task(() => Build(templatePth,reportPath));
     }
 
-        virtual public void BuildSync(string templatePth, string reportPath)
+    public void Build(string templatePth, string reportPath)
     {
         BuildBeginRegex();
         BuildEndRegex();
 
-        using (StreamReader source = new StreamReader(templatePth))
+        OpenFiles(templatePth,reportPath);
+
+        try{
+
+            BuildSync();
+        }
+        catch (Exception e)
         {
-            using(StreamWriter destination = new StreamWriter(reportPath))
-            {
-                BuildSync(source,destination);
-            }
+            CloseFiles();
+            throw e;
+        }
+
+        CloseFiles();
+    }
+
+    protected abstract void OpenFiles(string templatePth, string reportPath);
+
+    protected abstract void CloseFiles();
+
+    public void BuildSync()
+    {     
+        while (!EndOfSource())
+        {
+            ParseLine(ReadLine());
         }
     }
 
-    virtual protected void BuildSync(StreamReader source, StreamWriter destination)
-    {
-        StringBuilder query = new StringBuilder();
-        while (!source.EndOfStream)
-        {
-            ParseLine(source.ReadLine(), ref query, destination);
-        }
-    }
+    public abstract bool EndOfSource();
 
-    protected enum SearchState
-    {
-        BeginNotFound,
-        BeginFound,
-    }
-    protected virtual void ParseLine(string line, ref StringBuilder query, StreamWriter destination)
-    {
-        SearchState state = 
-            query.ToString().Length > 0 ? 
-                SearchState.BeginFound : 
-                SearchState.BeginNotFound;
+    public abstract string ReadLine();
 
-        for (int pos = 0, queryBegin = 0; pos < line.Length;)
+    public StringBuilder QueryText {get; protected set;} = new StringBuilder();
+    public bool QueryBeginFound {get; protected set;} = false;
+
+    public void InitQuery()
+    {
+        QueryText = new StringBuilder();
+        QueryBeginFound = false;
+    }   
+
+    public void ParseLine(string line)
+    {
+        OnNewInputLine(line);
+        while (!LineParsed)
         {
-            if (state == SearchState.BeginNotFound)
+            if (!QueryBeginFound)
             {
-                var match = BeginRegex.Match(line,pos);
-                if (match.Success)
-                {
-                    destination.Write(line.Substring(pos,match.Index - pos));
-
-                    queryBegin = match.Index + BeginSubstringLength;
-                    pos = queryBegin;
-                    state = SearchState.BeginFound;
-                    continue;
-                } else
-                {
-                    destination.Write(line.Substring(pos));
-                    break;
-                }
+                FindQueryBegin();
             } 
-            if (state == SearchState.BeginFound) 
+            if (QueryBeginFound) 
             {
-                var match = EndRegex.Match(line,pos);
-                if (match.Success)
-                {
-                    query.Append(line.Substring(queryBegin,match.Index - queryBegin));
-                    var result = ExecuteQuery(query.ToString());
-                }
+                FindQueryEnd();
             }
-
         }
-        destination.Write(System.Environment.NewLine);
+        OnLineParsed();
     }
 
-    protected virtual IEnumerable<string> ExecuteQuery(string query)
+    public abstract void OnLineParsed();
+    
+    string inputLine;
+    int inputLinePos;
+
+    protected void OnNewInputLine(string s)
+    {
+        inputLine = s;
+        inputLinePos = 0;
+    }
+
+    protected bool LineParsed => inputLinePos >= inputLine.Length;
+
+    public abstract void Write(string s);
+
+    protected void FindQueryBegin()
+    {
+        var match = BeginRegex.Match(inputLine,inputLinePos);
+
+        if (match.Success)
+        {
+            var s = inputLine.Substring(inputLinePos,match.Index - inputLinePos);
+            Write(s);
+
+            inputLinePos += BeginSubstringLength;
+
+            QueryBeginFound = true;
+        } else
+        {
+            var s = inputLine.Substring(inputLinePos);
+            Write(s);
+            inputLinePos = inputLine.Length;
+        }
+    }
+
+    protected void FindQueryEnd()
+    {
+        var match = EndRegex.Match(inputLine,inputLinePos);
+
+        if (match.Success)
+        {
+            var s = inputLine.Substring(inputLinePos,match.Index - inputLinePos);
+            QueryText.Append(s);
+
+            ExecuteQuery(QueryText.ToString());
+
+            QueryBeginFound = false;
+            inputLinePos += EndSubstringLength;
+        }  else
+        {
+            var s = inputLine.Substring(inputLinePos);
+            QueryText.Append(s);
+        }
+    }
+
+    public virtual void ExecuteQuery(string query)
     {
         Regex delimRegex = new Regex(Delim());
 
@@ -159,17 +208,14 @@ public abstract class AbstractReportBuilder : IReportBuilder
         {
             case TableSign:
                 var dt = SQLQueryExecutor.ExecuteReader(connectionString,sqlQuery);
-                return PrintDataTable(dt); 
+                Write(dt); 
+                break;
             default:
                 var res = SQLQueryExecutor.ExecuteScalar(connectionString,sqlQuery);
-                return new List<string>() {res.ToString()};
+                Write(res.ToString());
+                break;
         }
     }
 
-    protected virtual IEnumerable<string> PrintDataTable(DataTable dt)
-    {
-        List<string> result = new List<string>();
-        // fill list
-        return result;
-    }
+    public  abstract void Write(DataTable dt);
 }
