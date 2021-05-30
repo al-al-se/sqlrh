@@ -76,7 +76,7 @@ class ReportBuilderService : IReportBuilderService
         string fullTempName = GetTemp(fullReportName);
 
         GetBuilder(ext)
-            .Build(reportTemplatePath,fullTempName)
+            .BuildAsync(reportTemplatePath,fullTempName)
                 .ContinueWith(tr => File.Move(fullTempName,fullReportName));
      
         return fullReportName;

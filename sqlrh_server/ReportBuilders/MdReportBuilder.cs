@@ -9,7 +9,7 @@ class MdReportBuilder : TxtReportBuilder
     {
 
     }
-    public  override void Write(DataTable dt)
+    public  override void WriteTable(DataTable dt, string format)
     {
 
     }

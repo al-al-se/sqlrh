@@ -14,10 +14,16 @@ public abstract class AbstractReportBuilder : IReportBuilder
     // returning value type
     protected const string TableSign = "t";
 
+    // if table will be returned, columns formats are need
+    // <aligment><field length>:<format>
+    // aliment empty - right
+    // aligment '-'left
+    // column formats are comma separated
+    // t{<format c1>,< format c2>} 
 
-    protected const string ScalarIntSign = "si";
-
-    protected const string ScalarStringSign = "svc";
+    protected const string ScalarSign = "s";
+    // scalar needs format too
+    // s{<format>}
 
     //delim
 
@@ -202,20 +208,54 @@ public abstract class AbstractReportBuilder : IReportBuilder
 
         int pos3 = match2.Index + Delim().Length;
 
-        string sqlQuery = query.Substring(pos3);
+        int pos4 = pos3;
+        string formatString = "";
+        if (query[pos3] == '{')
+        {
+            pos4 = query.IndexOf('}',pos3);
+            formatString = query.Substring(pos3 + 1, pos4 - pos3 - 1);
+        } else
+        {
+            throw new FormatException();
+        }
+        int pos5 = pos4 + 1;
+
+        string sqlQuery = query.Substring(pos5);
 
         switch (valueType) 
         {
             case TableSign:
                 var dt = SQLQueryExecutor.ExecuteReader(connectionString,sqlQuery);
-                Write(dt); 
+                WriteTable(dt,formatString); 
                 break;
             default:
                 var res = SQLQueryExecutor.ExecuteScalar(connectionString,sqlQuery);
-                Write(res.ToString());
+                WriteScalar(res, formatString);
                 break;
         }
     }
 
-    public  abstract void Write(DataTable dt);
+    public  void WriteScalar(object o, string format)
+    {
+        if (o != null)
+        {
+            string fullFormatString = $"{{0{format} }}";
+            if (format.Contains("d"))
+            {
+                int iv = Int32.Parse(o.ToString());
+                Write(String.Format(fullFormatString,iv));
+                return;
+            }
+            var r = new Regex("/e/f/");
+            if (r.IsMatch(format))
+            {
+                double dv = Double.Parse(o.ToString());
+                Write(String.Format(fullFormatString,dv));
+                return;
+            }
+            Write(o.ToString());
+            return;
+        }
+    }
+    public  abstract void WriteTable(DataTable dt, string format);
 }
