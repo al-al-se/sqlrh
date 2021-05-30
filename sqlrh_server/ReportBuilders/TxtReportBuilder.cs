@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System;
 using System.Text;
@@ -5,10 +6,10 @@ using System.IO;
 using System.Data;
 using System.Collections.Generic;
 
-class TxtReportBuilder : AbstractReportBuilder
+public class TxtReportBuilder : AbstractReportBuilder
 {
-    StreamReader source;
-    StreamWriter destination;
+    TextReader source;
+    TextWriter destination;
 
     public TxtReportBuilder(IExternalDataBaseRepository r) : base(r)
     {
@@ -21,6 +22,12 @@ class TxtReportBuilder : AbstractReportBuilder
         destination = new StreamWriter(reportPath);
     }
 
+    public void OpenFilesForMock(TextReader src, TextWriter dst)
+    {
+        source = src;
+        destination = dst;
+    }
+
     protected override void CloseFiles()
     {
         source.Dispose();
@@ -31,7 +38,7 @@ class TxtReportBuilder : AbstractReportBuilder
 
     public override string ReadLine()=> source.ReadLine();
 
-    public override void OnLineParsed()
+    protected override void OnLineParsed()
                  => destination.Write(System.Environment.NewLine);
     public override void Write(string s) => destination.Write(s);
     

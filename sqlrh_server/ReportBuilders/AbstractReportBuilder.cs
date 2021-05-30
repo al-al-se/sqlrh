@@ -133,7 +133,7 @@ public abstract class AbstractReportBuilder : IReportBuilder
         OnLineParsed();
     }
 
-    public abstract void OnLineParsed();
+    protected abstract void OnLineParsed();
     
     string inputLine;
     int inputLinePos;
