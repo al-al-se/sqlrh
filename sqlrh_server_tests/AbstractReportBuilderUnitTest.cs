@@ -13,7 +13,9 @@ namespace sqlrh_server_tests
         {
             var dbMock = new Mock<IExternalDataBaseRepository>();
 
-            TxtReportBuilder tb = new TxtReportBuilder(dbMock.Object);
+            var sqlMock = new Mock<ISQLQueryExecutor>();
+
+            TxtReportBuilder tb = new TxtReportBuilder(dbMock.Object, sqlMock.Object);
 
             string srcFileName = Path.Combine(Directory.GetCurrentDirectory(),"src.txt");
             
@@ -75,7 +77,9 @@ namespace sqlrh_server_tests
             dbMock.Setup(a => a.GetConnectionString(It.IsNotNull<string>())).
                 Returns(new Task<string>(() => "db1_cs"));
 
-            TxtReportBuilder tb = new TxtReportBuilder(dbMock.Object);
+            var sqlMock = new Mock<ISQLQueryExecutor>();
+
+            TxtReportBuilder tb = new TxtReportBuilder(dbMock.Object, sqlMock.Object);
 
             string srcFileName = Path.Combine(Directory.GetCurrentDirectory(),"src3.txt");
             

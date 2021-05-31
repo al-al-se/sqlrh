@@ -5,7 +5,8 @@ using System.Collections.Generic;
 
 class HtmlReportBuilder : TxtReportBuilder
 {
-    public HtmlReportBuilder(IExternalDataBaseRepository r) : base(r)
+    public HtmlReportBuilder(IExternalDataBaseRepository r, ISQLQueryExecutor e) 
+        : base(r,e)
     {
 
     }

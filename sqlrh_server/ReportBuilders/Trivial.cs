@@ -4,6 +4,8 @@ class TrivialReportBuilder : IReportBuilder
 {
     public IExternalDataBaseRepository DataBases {get; set;}
 
+    public ISQLQueryExecutor SQLExecutor {get; set;}
+
     public void Build(string templatePath, string reportPath)
     {
                   using (Stream source = File.Open(templatePath, FileMode.Open))

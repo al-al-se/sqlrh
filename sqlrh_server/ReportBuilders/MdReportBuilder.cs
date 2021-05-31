@@ -5,7 +5,8 @@ using System.Collections.Generic;
 
 class MdReportBuilder : TxtReportBuilder
 {
-    public MdReportBuilder(IExternalDataBaseRepository r) : base(r)
+    public MdReportBuilder(IExternalDataBaseRepository r, ISQLQueryExecutor e) 
+        : base(r,e)
     {
 
     }

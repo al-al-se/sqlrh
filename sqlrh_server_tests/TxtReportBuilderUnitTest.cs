@@ -13,7 +13,9 @@ namespace sqlrh_server_tests
         {
             var dbMock = new Mock<IExternalDataBaseRepository>();
 
-            TxtReportBuilder tb = new TxtReportBuilder(dbMock.Object);
+            var sqlMock = new Mock<ISQLQueryExecutor>();
+
+            TxtReportBuilder tb = new TxtReportBuilder(dbMock.Object, sqlMock.Object);
 
             string srcFileName = Path.Combine(Directory.GetCurrentDirectory(),"src2.txt");
             

@@ -1,8 +1,8 @@
 using System.Data;
 using System.Data.Odbc;
-public class SQLQueryExecutor
+public class SQLQueryExecutor : ISQLQueryExecutor
 {
-    public static DataTable ExecuteReader(string connectionString, string query)
+    public DataTable ExecuteReader(string connectionString, string query)
     {
         using (OdbcConnection connection = new OdbcConnection(connectionString))
         {
@@ -21,7 +21,7 @@ public class SQLQueryExecutor
         }
     }
 
-    public static object ExecuteScalar(string connectionString, string query)
+    public object ExecuteScalar(string connectionString, string query)
     {
         using (OdbcConnection connection = new OdbcConnection(connectionString))
         {

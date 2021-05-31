@@ -61,9 +61,12 @@ public abstract class AbstractReportBuilder : IReportBuilder
 
     public IExternalDataBaseRepository DataBases {get; set;}
 
-     public AbstractReportBuilder(IExternalDataBaseRepository r)
+    public ISQLQueryExecutor SQLExecutor {get; set;}
+
+     public AbstractReportBuilder(IExternalDataBaseRepository r, ISQLQueryExecutor e)
      {
         DataBases = r;
+        SQLExecutor = e;
      }
 
     public Task BuildAsync(string templatePth, string reportPath)
@@ -225,11 +228,11 @@ public abstract class AbstractReportBuilder : IReportBuilder
         switch (valueType) 
         {
             case TableSign:
-                var dt = SQLQueryExecutor.ExecuteReader(connectionString,sqlQuery);
+                var dt = SQLExecutor.ExecuteReader(connectionString,sqlQuery);
                 WriteTable(dt,formatString); 
                 break;
             default:
-                var res = SQLQueryExecutor.ExecuteScalar(connectionString,sqlQuery);
+                var res = SQLExecutor.ExecuteScalar(connectionString,sqlQuery);
                 WriteScalar(res, formatString);
                 break;
         }
