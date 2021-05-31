@@ -157,10 +157,11 @@ public abstract class AbstractReportBuilder : IReportBuilder
 
         if (match.Success)
         {
-            var s = inputLine.Substring(inputLinePos,match.Index - inputLinePos);
+            int textLength = match.Index - inputLinePos;
+            var s = inputLine.Substring(inputLinePos,textLength);
             Write(s);
 
-            inputLinePos += BeginSubstringLength;
+            inputLinePos += textLength + BeginSubstringLength;
 
             QueryBeginFound = true;
         } else
@@ -177,13 +178,14 @@ public abstract class AbstractReportBuilder : IReportBuilder
 
         if (match.Success)
         {
-            var s = inputLine.Substring(inputLinePos,match.Index - inputLinePos);
+            int queryLength = match.Index - inputLinePos;
+            var s = inputLine.Substring(inputLinePos,queryLength);
             QueryText.Append(s);
 
             ExecuteQuery(QueryText.ToString());
 
             QueryBeginFound = false;
-            inputLinePos += EndSubstringLength;
+            inputLinePos += queryLength + EndSubstringLength;
         }  else
         {
             var s = inputLine.Substring(inputLinePos);

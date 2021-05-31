@@ -114,27 +114,40 @@ namespace sqlrh_server_tests
         [Fact]
         public void FindSingleLineQueryTest()
         {
+            string query = "s{,4:f1} db1 select min(value) from table_a where id > 2";
+
             var dbMock = new Mock<IExternalDataBaseRepository>();
+            dbMock.Setup(a => a.GetConnectionString(It.IsNotNull<string>())).
+                Returns(new Task<string>(() => "db1_cs"));
+
+            object value = 1.23456789;
+
+            string expected_result = " 1,2";
 
             var sqlMock = new Mock<ISQLQueryExecutor>();
+            sqlMock.Setup(a => a.ExecuteScalar(It.IsNotNull<string>(),It.IsNotNull<string>())).
+                Returns(value);
 
             TxtReportBuilder tb = new TxtReportBuilder(dbMock.Object, sqlMock.Object);
 
-            StringBuilder inputLine = new StringBuilder();
-            inputLine.Append("aas d < g a<<1 sql ");
-            inputLine.Append(tb.OpeningTag());
-            inputLine.Append(tb.Delim());
-            string query = "s{,4:f1} db1 select min(value) from table_a where id > 2";
-            inputLine.Append(query);
-            inputLine.Append(tb.Delim());
-            inputLine.Append(tb.ClosingTag());
-            inputLine.Append(" fdvnkk  kfkdk k kkkf ");
+            StringBuilder reportTemplate = new StringBuilder();
+            StringBuilder expectedReport = new StringBuilder();
+            reportTemplate.Append("aas d < g a<<1 sql ");
+            expectedReport.Append("aas d < g a<<1 sql ");
+            reportTemplate.Append(tb.OpeningTag());
+            reportTemplate.Append(tb.Delim());
+            reportTemplate.Append(query);
+            reportTemplate.Append(tb.Delim());
+            reportTemplate.Append(tb.ClosingTag());
+            expectedReport.Append(expected_result);
+            reportTemplate.Append(" fdvnkk  kfkdk k kkkf ");
+            expectedReport.Append(" fdvnkk  kfkdk k kkkf ");
 
             string srcFileName = Path.Combine(Directory.GetCurrentDirectory(),"src4.txt");
             
             using (var src_file = new StreamWriter(srcFileName)) 
             {
-                src_file.WriteLine(inputLine.ToString());
+                src_file.WriteLine(reportTemplate.ToString());
             }
 
             string dstFileName = Path.Combine(Directory.GetCurrentDirectory(),"src5.txt");
@@ -142,6 +155,15 @@ namespace sqlrh_server_tests
             tb.Build(srcFileName,dstFileName);
 
             Assert.Equal(query,tb.QueryText.ToString());
+
+            string writedReport = "";
+
+            using (var dst_file = new StreamReader(dstFileName)) 
+            {
+                writedReport = dst_file.ReadLine();
+            }
+
+            Assert.Equal(expectedReport.ToString(),writedReport);
 
             File.Delete(srcFileName);
             File.Delete(dstFileName);
