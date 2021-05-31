@@ -15,19 +15,28 @@ namespace sqlrh_server_tests
             TxtReportBuilder tb = new TxtReportBuilder(dbMock.Object);
 
             string srcFileName = Path.Combine(Directory.GetCurrentDirectory(),"src.txt");
-            File.Create(srcFileName);
+            
+            using (var src_file = new StreamWriter(srcFileName)) 
+            {
 
-            var src = new StreamReader(srcFileName);
-            var dst = new StringWriter();
+            }
 
-            tb.OpenFilesForMock(src,dst);
+            string obtained_result = "";
 
-            int val = 12;
-            tb.WriteScalar(val,":d");
+            using (var src = new StreamReader(srcFileName))
+            {
+                using (var dst = new StringWriter())
+                {
 
-            string obtained_result = dst.ToString();
+                    tb.OpenFilesForMock(src,dst);
 
-            src.Close();
+                    int val = 12;
+                    tb.WriteScalar(val,":d");
+
+                    obtained_result = dst.ToString();
+                }
+            }
+
             File.Delete(srcFileName);
 
             string expected_result = "12";
