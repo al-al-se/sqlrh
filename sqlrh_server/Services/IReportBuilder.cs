@@ -7,6 +7,10 @@ public interface IReportBuilderService
 
     string TempPath {get; init;}
 
+    IExternalDataBaseRepository DataBases {get; init;}
+
+    ISQLQueryExecutor SQLExecutor {get; init;}
+
     Task<string> SaveUploadingReportTemplate(IFormFile uploadingFile);
 
     string StartReportBuilding(string reportTemplatePath);

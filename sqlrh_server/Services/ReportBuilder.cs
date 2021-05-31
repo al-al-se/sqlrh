@@ -38,13 +38,23 @@ class ReportBuilderService : IReportBuilderService
         return Path.Combine(Directory.GetCurrentDirectory(),"ReportTemp");
     }
 
-    public ReportBuilderService(IOptions<ReportBuilderOptions> options)
+    public IExternalDataBaseRepository DataBases {get; init;}
+
+    public ISQLQueryExecutor SQLExecutor {get; init;}
+
+    public ReportBuilderService(IOptions<ReportBuilderOptions> options,
+                IExternalDataBaseRepository dbs,
+                ISQLQueryExecutor exec)
     {
         _options = options.Value;
 
         ReportTemplatePath = PrepareReportTemplatePath();
 
         TempPath = PrepareTempPath();
+
+        DataBases = dbs;
+
+        SQLExecutor = exec;
     } 
     public async Task<string> SaveUploadingReportTemplate(IFormFile uploadingFile)
     {
@@ -63,6 +73,9 @@ class ReportBuilderService : IReportBuilderService
     {
         switch(ext)
         {
+            case ".txt": return new TxtReportBuilder(DataBases,SQLExecutor);
+            case ".md": return new MdReportBuilder(DataBases,SQLExecutor);
+            case ".html": return new HtmlReportBuilder(DataBases,SQLExecutor);
             default: return new TrivialReportBuilder();
         }
     }
