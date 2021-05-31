@@ -7,12 +7,12 @@ using System.Text;
 public abstract class AbstractReportBuilder : IReportBuilder
 {
     // sql query in report template:
-    protected virtual string OpeningTag() => "<<sqlrh";
+    public virtual string OpeningTag() => "<<sqlrh";
     
-    protected virtual Char Delim() => ' ';//delim
+    public virtual Char Delim() => ' ';//delim
 
     // returning value type
-    protected const string TableSign = "t";
+    public const string TableSign = "t";
 
     // if table will be returned, columns formats are need
     // <aligment><field length>:<format>
@@ -21,7 +21,7 @@ public abstract class AbstractReportBuilder : IReportBuilder
     // column formats are semicolon separated
     // t{<format c1>;< format c2>} 
 
-    protected const string ScalarSign = "s";
+    public const string ScalarSign = "s";
     // scalar needs format too
     // s{<format>}
 
@@ -35,7 +35,7 @@ public abstract class AbstractReportBuilder : IReportBuilder
 
     //delim
 
-    protected virtual string ClosingTag() => "sqlrh>>";
+    public virtual string ClosingTag() => "sqlrh>>";
 
     protected Regex BeginRegex {get; set;}
 

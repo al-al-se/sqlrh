@@ -1,3 +1,4 @@
+using System.Text;
 using System.IO;
 using System;
 using Xunit;
@@ -67,7 +68,6 @@ namespace sqlrh_server_tests
 
         }
 
-
         [Fact]
         public void ExecuteQueryTest()
         {
@@ -109,6 +109,42 @@ namespace sqlrh_server_tests
             }
 
             File.Delete(srcFileName);
+        }
+
+        [Fact]
+        public void FindSingleLineQueryTest()
+        {
+            var dbMock = new Mock<IExternalDataBaseRepository>();
+
+            var sqlMock = new Mock<ISQLQueryExecutor>();
+
+            TxtReportBuilder tb = new TxtReportBuilder(dbMock.Object, sqlMock.Object);
+
+            StringBuilder inputLine = new StringBuilder();
+            inputLine.Append("aas d < g a<<1 sql ");
+            inputLine.Append(tb.OpeningTag());
+            inputLine.Append(tb.Delim());
+            string query = "s{,4:f1} db1 select min(value) from table_a where id > 2";
+            inputLine.Append(query);
+            inputLine.Append(tb.Delim());
+            inputLine.Append(tb.ClosingTag());
+            inputLine.Append(" fdvnkk  kfkdk k kkkf ");
+
+            string srcFileName = Path.Combine(Directory.GetCurrentDirectory(),"src4.txt");
+            
+            using (var src_file = new StreamWriter(srcFileName)) 
+            {
+                src_file.WriteLine(inputLine.ToString());
+            }
+
+            string dstFileName = Path.Combine(Directory.GetCurrentDirectory(),"src5.txt");
+
+            tb.Build(srcFileName,dstFileName);
+
+            Assert.Equal(query,tb.QueryText.ToString());
+
+            File.Delete(srcFileName);
+            File.Delete(dstFileName);
         }
     }
 }
