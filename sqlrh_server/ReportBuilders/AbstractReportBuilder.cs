@@ -239,7 +239,7 @@ public abstract class AbstractReportBuilder : IReportBuilder
     {
         if (o != null)
         {
-            string fullFormatString = $"{{0{format} }}";
+            string fullFormatString = $"{{0{format}}}";
             if (format.Contains("d"))
             {
                 int iv = Int32.Parse(o.ToString());
