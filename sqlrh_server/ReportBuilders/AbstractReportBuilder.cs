@@ -9,7 +9,7 @@ public abstract class AbstractReportBuilder : IReportBuilder
     // sql query in report template:
     protected virtual string OpeningTag() => "<<sqlrh";
     
-    protected virtual string Delim() => " ";//delim
+    protected virtual Char Delim() => ' ';//delim
 
     // returning value type
     protected const string TableSign = "t";
@@ -193,37 +193,36 @@ public abstract class AbstractReportBuilder : IReportBuilder
 
     public virtual void ExecuteQuery(string query)
     {
-        Regex delimRegex = new Regex(Delim());
+        int cur_pos = query.IndexOf('{');
 
-        var match1 = delimRegex.Match(query);
+        if (cur_pos == -1) throw new FormatException();
 
-        string valueType = query.Substring(0,match1.Index);
+        string valueType = query.Substring(0,cur_pos);
 
-        int pos2 = match1.Index + Delim().Length;
+        int prev_pos = cur_pos;    
+        cur_pos = query.IndexOf('}',prev_pos);
 
-        var match2 = delimRegex.Match(query, pos2);
+        if (cur_pos == -1) throw new FormatException();
 
-        string alias = query.Substring(pos2,match2.Index - pos2);
+        string formatString = query.Substring(prev_pos + 1, cur_pos - prev_pos - 1);
+
+        if (query[++cur_pos] != Delim())  throw new FormatException();
+
+        while (query[cur_pos] == Delim()) ++cur_pos;
+ 
+        prev_pos = cur_pos;
+
+        while (query[cur_pos] != Delim()) ++cur_pos;
+
+        string alias = query.Substring(prev_pos, cur_pos - prev_pos);
 
         var task =  DataBases.GetConnectionString(alias);
         task.RunSynchronously();
         string connectionString = task.Result;
 
-        int pos3 = match2.Index + Delim().Length;
+        while (query[cur_pos] == Delim()) ++cur_pos;
 
-        int pos4 = pos3;
-        string formatString = "";
-        if (query[pos3] == '{')
-        {
-            pos4 = query.IndexOf('}',pos3);
-            formatString = query.Substring(pos3 + 1, pos4 - pos3 - 1);
-        } else
-        {
-            throw new FormatException();
-        }
-        int pos5 = pos4 + 1;
-
-        string sqlQuery = query.Substring(pos5);
+        string sqlQuery = query.Substring(cur_pos);
 
         switch (valueType) 
         {

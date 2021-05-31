@@ -71,13 +71,19 @@ namespace sqlrh_server_tests
         [Fact]
         public void ExecuteQueryTest()
         {
-            string query = "s(,4:f1) db1 select min(value) from table_a";
+            string query = "s{,4:f1} db1 select min(value) from table_a";
 
             var dbMock = new Mock<IExternalDataBaseRepository>();
             dbMock.Setup(a => a.GetConnectionString(It.IsNotNull<string>())).
                 Returns(new Task<string>(() => "db1_cs"));
 
+            object value = 1.23456789;
+
+            string expected_result = " 1,2";
+
             var sqlMock = new Mock<ISQLQueryExecutor>();
+            sqlMock.Setup(a => a.ExecuteScalar(It.IsNotNull<string>(),It.IsNotNull<string>())).
+                Returns(value);
 
             TxtReportBuilder tb = new TxtReportBuilder(dbMock.Object, sqlMock.Object);
 
@@ -94,9 +100,11 @@ namespace sqlrh_server_tests
                 {
                     tb.OpenFilesForMock(src,dst);
 
+                    tb.ExecuteQuery(query);
+
                     string obtained_result = dst.ToString();
-                    string expected_result = "12";
-                    Assert.Equal(obtained_result,expected_result);
+                    
+                    Assert.Equal(expected_result,obtained_result);
                 }
             }
 
