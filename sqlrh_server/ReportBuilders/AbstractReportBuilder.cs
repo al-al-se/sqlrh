@@ -18,8 +18,8 @@ public abstract class AbstractReportBuilder : IReportBuilder
     // <aligment><field length>:<format>
     // aliment empty - right
     // aligment '-'left
-    // column formats are comma separated
-    // t{<format c1>,< format c2>} 
+    // column formats are semicolon separated
+    // t{<format c1>;< format c2>} 
 
     protected const string ScalarSign = "s";
     // scalar needs format too
@@ -246,7 +246,7 @@ public abstract class AbstractReportBuilder : IReportBuilder
                 Write(String.Format(fullFormatString,iv));
                 return;
             }
-            var r = new Regex("/e/f/");
+            var r = new Regex("e|f");
             if (r.IsMatch(format))
             {
                 double dv = Double.Parse(o.ToString());

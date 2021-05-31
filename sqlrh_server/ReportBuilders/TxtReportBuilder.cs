@@ -55,13 +55,13 @@ public class TxtReportBuilder : AbstractReportBuilder
         }
 
         int Width = sb.ToString().Length;
-        string rowDelim = new string('_',Width);
+        string rowDelim = new string('-',Width);
 
         destination.WriteLine(rowDelim);
         destination.WriteLine(sb.ToString());
         destination.WriteLine(rowDelim);
 
-        string[] formats = format.Split(',');
+        string[] formats = format.Split(';');
         foreach (DataRow r in dt.Rows)
         {
             Write("| ");

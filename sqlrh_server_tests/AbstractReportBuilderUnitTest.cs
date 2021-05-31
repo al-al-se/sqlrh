@@ -8,7 +8,7 @@ namespace sqlrh_server_tests
     public class AbstractReportBuilderUnitTest
     {
         [Fact]
-        public void WriteScalarIntTest()
+        public void WriteScalarTest()
         {
             var dbMock = new Mock<IExternalDataBaseRepository>();
 
@@ -21,27 +21,47 @@ namespace sqlrh_server_tests
 
             }
 
-            string obtained_result = "";
-
             using (var src = new StreamReader(srcFileName))
             {
                 using (var dst = new StringWriter())
                 {
-
                     tb.OpenFilesForMock(src,dst);
 
                     int val = 12;
                     tb.WriteScalar(val,":d");
 
-                    obtained_result = dst.ToString();
+                    string obtained_result = dst.ToString();
+                    string expected_result = "12";
+                    Assert.Equal(obtained_result,expected_result);
+                }
+
+                using (var dst = new StringWriter())
+                {
+                    tb.OpenFilesForMock(src,dst);
+
+                    int val = 12;
+                    tb.WriteScalar(val,",-5:d");
+
+                    string obtained_result = dst.ToString();
+                    string expected_result = "12   ";
+                    Assert.Equal(obtained_result,expected_result);
+                }
+
+                using (var dst = new StringWriter())
+                {
+                    tb.OpenFilesForMock(src,dst);
+
+                    double val = 13.23789;
+                    tb.WriteScalar(val,",5:f2");
+
+                    string obtained_result = dst.ToString();
+                    string expected_result = "13,24";
+                    Assert.Equal(expected_result,obtained_result);
                 }
             }
 
             File.Delete(srcFileName);
 
-            string expected_result = "12";
-
-            Assert.Equal(obtained_result,expected_result);
         }
     }
 }
