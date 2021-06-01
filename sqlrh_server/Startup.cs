@@ -29,18 +29,14 @@ namespace sqlrh_server
         {
             string connection = Configuration.GetConnectionString("DefaultConnection");
 
-            services.AddDbContext<ReportContext>(options => options.UseSqlite(connection));
-            services.AddTransient<IReportRepository,ReportContext>();
-
-            services.AddDbContext<ExternalDataBaseContext>(options => options.UseSqlite(connection));
-            services.AddTransient<IExternalDataBaseRepository,ExternalDataBaseContext>();
-
+            services.AddDbContext<IReportRepository,ReportContext>(options => options.UseSqlite(connection));
+           
+            services.AddDbContext<IExternalDataBaseRepository,ExternalDataBaseContext>(options => options.UseSqlite(connection));
+            
             services.Configure<ReportBuilderOptions>(Configuration.GetSection(
                                         ReportBuilderOptions.SectionName));
                                         
-            services.AddTransient<IReportBuilderService,ReportBuilderService>();
-
-            services.AddTransient<ISQLQueryExecutor,SQLQueryExecutor>();
+            services.AddScoped<IReportBuilderService,ReportBuilderService>();
                    
             services.AddControllers();
 
