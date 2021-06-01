@@ -22,6 +22,7 @@ public class ReportContext : DbContext, IReportRepository
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Report>().ToTable("Reports");
+        modelBuilder.Entity<ExternalDatabase>().ToTable("ExternalDatabases");
     }
 
     public async Task<Report> Add(string name)

@@ -5,34 +5,48 @@ using System.Threading.Tasks;
  
 public class ExternalDataBaseContext : DbContext, IExternalDataBaseRepository
 {
-    private DbSet<ExternalDatabase> Bases { get; set; }
+    private DbSet<ExternalDatabase> ExternalDatabases { get; set; }
 
         public ExternalDataBaseContext(DbContextOptions<ExternalDataBaseContext> options)
         : base(options)
     {
-        Database.EnsureCreated();
+       
     }
-
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
-        modelBuilder.Entity<ExternalDatabase>().ToTable("ExternalDatabases");
-    }
-
     public  async Task<IEnumerable<ExternalDatabase>> GetAll()
     {
-        var r = await Bases.ToListAsync();
+        var r = await ExternalDatabases.ToListAsync();
         return r;
+    }
+
+    public async Task<ExternalDatabase> Get(string alias)
+    {
+        return await ExternalDatabases.FirstAsync(i => i.Alias == alias);
     }
 
     public async Task<string> GetConnectionString(string alias)
     {
-        return (await Bases.FirstAsync(b => b.Alias == alias)).ConnectionString;
+        return (await Get(alias)).ConnectionString;
     }
 
     public async Task<ExternalDatabase> Add(string alias, string connectionString)
     {
-        return (await Bases.AddAsync(
+        var n =  (await ExternalDatabases.AddAsync(
             new ExternalDatabase() {Alias = alias, ConnectionString = connectionString}
                                 )).Entity;
+        await SaveChangesAsync();
+        return n;
+    }
+
+    public async Task<bool> Contains(string alias)
+    {
+        return await ExternalDatabases.AnyAsync(i => i.Alias == alias);
+    }
+
+    public async Task<ExternalDatabase> Change(string alias, string connectionString)
+    {
+        var b = await Get(alias);
+        b.ConnectionString = connectionString;
+        await SaveChangesAsync();
+        return b;
     }
 }
