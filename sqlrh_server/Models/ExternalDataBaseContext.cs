@@ -28,10 +28,15 @@ public class ExternalDataBaseContext : DbContext, IExternalDataBaseRepository
         return (await Get(alias)).ConnectionString;
     }
 
-    public async Task<ExternalDatabase> Add(string alias, string connectionString)
+    public async Task<ExternalDatabase> Add(string alias,
+                                            string dbms,
+                                            string connectionString)
     {
         var n =  (await ExternalDatabases.AddAsync(
-            new ExternalDatabase() {Alias = alias, ConnectionString = connectionString}
+            new ExternalDatabase() {
+                                    Alias = alias,
+                                    DBMS = dbms,
+                                    ConnectionString = connectionString}
                                 )).Entity;
         await SaveChangesAsync();
         return n;

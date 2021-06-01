@@ -8,7 +8,7 @@ public interface IExternalDataBaseRepository
 
     Task<ExternalDatabase> Get(string alias);
 
-    Task<ExternalDatabase> Add(string alias, string connectionString);
+    Task<ExternalDatabase> Add(string alias, string dbms, string connectionString);
 
     Task<bool> Contains(string alias);
 

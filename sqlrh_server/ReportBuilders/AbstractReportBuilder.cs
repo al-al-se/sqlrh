@@ -197,34 +197,45 @@ public abstract class AbstractReportBuilder : IReportBuilder
         return this;
     }
 
-    public string GetConnectionString(string alias)
+    public ExternalDatabase GetDB(string alias)
     {
         try
         {
-            return DataBases.First(i => i.Alias == alias).ConnectionString;
+            return DataBases.First(i => i.Alias == alias);
         } catch (Exception e)
         {
             //log e
         }
 
         Write($"Database connection string for alias '{alias}' is not found");
-        return "";
+        return null;
+    }
+
+    public class QueryData
+    {
+        public string valueType;
+
+        public ExternalDatabase database;
+        public string sqlQuery;
+        public string formatString;
     }
 
     public virtual void ParseQueryParameters(string query)
     {
+        QueryData q = new QueryData();
+
         int cur_pos = query.IndexOf('{');
 
         if (cur_pos == -1) {Write("{ not found"); return;}
 
-        string valueType = query.Substring(0,cur_pos);
+        q.valueType = query.Substring(0,cur_pos);
 
         int prev_pos = cur_pos;    
         cur_pos = query.IndexOf('}',prev_pos);
 
         if (cur_pos == -1) {Write("} not found"); return;}
 
-        string formatString = query.Substring(prev_pos + 1, cur_pos - prev_pos - 1);
+        q.formatString = query.Substring(prev_pos + 1, cur_pos - prev_pos - 1);
 
         if (query[++cur_pos] != Delim()) {Write("delimeter not found"); return;}
 
@@ -236,30 +247,42 @@ public abstract class AbstractReportBuilder : IReportBuilder
 
         string alias = query.Substring(prev_pos, cur_pos - prev_pos);
 
-        string connectionString = GetConnectionString(alias);
-        if (String.IsNullOrEmpty(connectionString)) return;
+        q.database = GetDB(alias);
+        if (q.database == null) return;
 
         while (query[cur_pos] == Delim()) ++cur_pos;
 
-        string sqlQuery = query.Substring(cur_pos);
+        q.sqlQuery = query.Substring(cur_pos);
 
-        ExecuteQuery(valueType, connectionString, sqlQuery,  formatString);
+        ExecuteQuery(q);
     }
 
-    public void ExecuteQuery(string valueType, string connectionString,
-                             string sqlQuery,  string formatString)
+    public ISQLQueryExecutor GetSQLQueryExecutor(QueryData q)
     {
-        var exec = new SQLQueryExecutor();
+        switch (q.database.DBMS.ToLower())
+        {
+            case "sqlite":
+                return new SQLiteExecutor();
+            default:
+                Write($"DBMS {q.database.DBMS} driver is not found");
+                return null;
+        }
+    }
 
-        switch (valueType) 
+    public void ExecuteQuery(QueryData q)
+    {
+        ISQLQueryExecutor exec = GetSQLQueryExecutor(q);
+        if (exec == null) return;
+
+        switch (q.valueType) 
         {
             case TableSign:
-                var dt = exec.ExecuteReader(connectionString,sqlQuery);
-                WriteTable(dt,formatString); 
+                var dt = exec.ExecuteReader(q.database.ConnectionString,q.sqlQuery);
+                WriteTable(dt,q.formatString); 
                 break;
             default:
-                var res = exec.ExecuteScalar(connectionString,sqlQuery);
-                WriteScalar(res, formatString);
+                var res = exec.ExecuteScalar(q.database.ConnectionString,q.sqlQuery);
+                WriteScalar(res, q.formatString);
                 break;
         }
     }

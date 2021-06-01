@@ -33,13 +33,13 @@ namespace sqlrh_server.Controllers
 
         [Route("AddNew")]
         [HttpPost]
-        public async Task<IActionResult> AddNew(string alias, string connectionString)
+        public async Task<IActionResult> AddNew(string alias, string dbms,  string connectionString)
         {
             return new  CreatedResult(alias,
-                         await _repository.Add(alias,connectionString));
+                         await _repository.Add(alias, dbms, connectionString));
         }
 
-        [Route("Execute")]
+        [Route("ChangeConnection")]
         [HttpPost]
         public async Task<IActionResult> ChangeConnection(string alias, string connectionString)
         {
