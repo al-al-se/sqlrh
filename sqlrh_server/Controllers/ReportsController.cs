@@ -69,7 +69,7 @@ namespace sqlrh_server.Controllers
             if (await _repository.ContainsId(id))
             {
                 var r = await _repository.GetReport(id);
-                var dest = _builder.StartReportBuilding(r.FilePath);
+                var dest = await _builder.StartReportBuilding(r.FilePath);
 
                 return new  CreatedResult(r.Name, dest);
             }
