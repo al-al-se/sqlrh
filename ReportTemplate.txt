@@ -1,8 +1,19 @@
 Report
 
-Table A:
-<rt db1 select * from table_a>
+Prepare data:
+db1:
+create tbl1 (id int, value float);
+insert into tbl1 values (1, 0.23);
+insert into tbl1 values (2, 0.3);
+insert into tbl1 values (3, 0.4);
+insert into tbl1 values (4, 0.123456789);
 
-row count <rn db1 select count(*) from table_a>
+Test report:
 
-max value <rs db1 select name, value from table_a where value = (select max(value) from table_a)>
+Table 1:
+<<sqlrh
+t(,-3:d;,5:f2) db1 
+select * from tbl1 
+ sqlrh>>
+count: <sqlrh s(:d) db1 select count(*) from tbl1 sqlrh>>, min: <sqlrh s(:d) db1 select min(value) from tbl1 sqlrh>>, max: <sqlrh s(:d) db1 select max(value) from tbl1 sqlrh>>
+
