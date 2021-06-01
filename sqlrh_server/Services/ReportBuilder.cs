@@ -89,6 +89,7 @@ class ReportBuilderService : IReportBuilderService
         string fullTempName = GetTemp(fullReportName);
 
         var task = GetBuilder(ext).
+            SetDataBaseRepositotyTimeoutMilisec(_options.DataBaseRepositotyTimeoutMilisec).
             BuildAsync(reportTemplatePath,fullTempName).
             ContinueWith(tr => File.Move(fullTempName,fullReportName));
 

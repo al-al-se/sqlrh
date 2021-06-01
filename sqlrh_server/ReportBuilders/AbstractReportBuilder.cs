@@ -1,3 +1,4 @@
+using System.Reflection;
 using System;
 using System.Data;
 using System.Text.RegularExpressions;
@@ -190,7 +191,16 @@ public abstract class AbstractReportBuilder : IReportBuilder
         {
             var s = inputLine.Substring(inputLinePos);
             QueryText.Append(s);
+            inputLinePos += s.Length;
         }
+    }
+
+    public int DataBaseRepositotyTimeoutMilisec {get; set;}
+
+    public IReportBuilder SetDataBaseRepositotyTimeoutMilisec(int value)
+    {
+        DataBaseRepositotyTimeoutMilisec = value;
+        return this;
     }
 
     public virtual void ExecuteQuery(string query)
@@ -218,8 +228,14 @@ public abstract class AbstractReportBuilder : IReportBuilder
 
         string alias = query.Substring(prev_pos, cur_pos - prev_pos);
 
-        var task =  DataBases.GetConnectionString(alias);
-        task.RunSynchronously();
+        var task = DataBases.GetConnectionString(alias);
+        task.Wait(DataBaseRepositotyTimeoutMilisec);
+        if (!task.IsCompletedSuccessfully)
+        {
+            Write("Database connection string for alias {alias} is not found");
+            return;
+        }
+
         string connectionString = task.Result;
 
         while (query[cur_pos] == Delim()) ++cur_pos;
