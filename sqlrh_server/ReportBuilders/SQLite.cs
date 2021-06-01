@@ -11,12 +11,11 @@ public class SQLiteExecutor : ISQLQueryExecutor
             
             var command = new SqliteCommand(query, connection);
 
-            var reader = command.ExecuteReader();
-
             DataTable dt = new DataTable();
-
-            dt.Load(reader);    
-
+            using (var reader = command.ExecuteReader())
+            {
+                dt.Load(reader);    
+            }
             return dt;            
         }
     }
@@ -29,7 +28,7 @@ public class SQLiteExecutor : ISQLQueryExecutor
             
             var command = new SqliteCommand(query, connection);
 
-                return command.ExecuteScalar();
+            return command.ExecuteScalar();
         }
     }
 }

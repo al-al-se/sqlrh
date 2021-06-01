@@ -169,18 +169,21 @@ public abstract class AbstractReportBuilder : IReportBuilder
 
         if (match.Success)
         {
-            if (inputLine[match.Index] == Delim())
-            {
-                inputLinePos++;
-            }
             int queryLength = match.Index - inputLinePos;
             var s = inputLine.Substring(inputLinePos,queryLength);
             QueryText.Append(s);
 
-            ParseQueryParameters(QueryText.ToString());
+            ParseQueryParametersAndExecute(QueryText.ToString());
+            QueryText.Clear();
 
             QueryBeginFound = false;
+            
             inputLinePos += queryLength + ClosingTag().Length;
+
+            if (inputLine[match.Index] == Delim())
+            {
+                inputLinePos++;
+            }
         }  else
         {
             var s = inputLine.Substring(inputLinePos);
@@ -220,7 +223,7 @@ public abstract class AbstractReportBuilder : IReportBuilder
         public string formatString;
     }
 
-    public virtual void ParseQueryParameters(string query)
+    public virtual void ParseQueryParametersAndExecute(string query)
     {
         QueryData q = new QueryData();
 
