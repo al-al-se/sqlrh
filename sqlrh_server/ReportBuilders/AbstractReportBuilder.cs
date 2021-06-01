@@ -42,22 +42,14 @@ public abstract class AbstractReportBuilder : IReportBuilder
 
     protected Regex EndRegex {get; set;}
 
-    protected int BeginSubstringLength {get; set;}
-
-    protected int EndSubstringLength {get; set;}
-
     protected void BuildBeginRegex()
     {
-        string s = $"{OpeningTag()}({Delim()}|$)";
-        BeginSubstringLength = s.Length;
-        BeginRegex = new Regex(s);
+        BeginRegex = new Regex($"{OpeningTag()}({Delim()}|$)");
     }
 
     protected void BuildEndRegex()
     {
-        string s = $"(^|{Delim()}){ClosingTag()}";
-        EndSubstringLength = s.Length;
-        EndRegex = new Regex(s); 
+        EndRegex = new Regex($"(^|{Delim()}){ClosingTag()}"); 
     }
 
     public IExternalDataBaseRepository DataBases {get; set;}
@@ -162,7 +154,7 @@ public abstract class AbstractReportBuilder : IReportBuilder
             var s = inputLine.Substring(inputLinePos,textLength);
             Write(s);
 
-            inputLinePos += textLength + BeginSubstringLength;
+            inputLinePos += textLength + OpeningTag().Length + 1;
 
             QueryBeginFound = true;
         } else
@@ -179,14 +171,18 @@ public abstract class AbstractReportBuilder : IReportBuilder
 
         if (match.Success)
         {
+            if (inputLine[match.Index] == Delim())
+            {
+                inputLinePos++;
+            }
             int queryLength = match.Index - inputLinePos;
             var s = inputLine.Substring(inputLinePos,queryLength);
             QueryText.Append(s);
 
-            ExecuteQuery(QueryText.ToString());
+            ParseQueryParameters(QueryText.ToString());
 
             QueryBeginFound = false;
-            inputLinePos += queryLength + EndSubstringLength;
+            inputLinePos += queryLength + ClosingTag().Length;
         }  else
         {
             var s = inputLine.Substring(inputLinePos);
@@ -203,22 +199,41 @@ public abstract class AbstractReportBuilder : IReportBuilder
         return this;
     }
 
-    public virtual void ExecuteQuery(string query)
+    public string GetConnectionString(string alias)
+    {
+        try
+        {
+            var task = DataBases.GetConnectionString(alias);
+            task.Wait(DataBaseRepositotyTimeoutMilisec);
+            if (task.IsCompletedSuccessfully)
+            {
+                return task.Result;
+            }
+        } catch (Exception e)
+        {
+            //log e
+        }
+
+        Write($"Database connection string for alias '{alias}' is not found");
+        return "";
+    }
+
+    public virtual void ParseQueryParameters(string query)
     {
         int cur_pos = query.IndexOf('{');
 
-        if (cur_pos == -1) throw new FormatException();
+        if (cur_pos == -1) {Write("{ not found"); return;}
 
         string valueType = query.Substring(0,cur_pos);
 
         int prev_pos = cur_pos;    
         cur_pos = query.IndexOf('}',prev_pos);
 
-        if (cur_pos == -1) throw new FormatException();
+        if (cur_pos == -1) {Write("} not found"); return;}
 
         string formatString = query.Substring(prev_pos + 1, cur_pos - prev_pos - 1);
 
-        if (query[++cur_pos] != Delim())  throw new FormatException();
+        if (query[++cur_pos] != Delim()) {Write("delimeter not found"); return;}
 
         while (query[cur_pos] == Delim()) ++cur_pos;
  
@@ -228,21 +243,20 @@ public abstract class AbstractReportBuilder : IReportBuilder
 
         string alias = query.Substring(prev_pos, cur_pos - prev_pos);
 
-        var task = DataBases.GetConnectionString(alias);
-        task.Wait(DataBaseRepositotyTimeoutMilisec);
-        if (!task.IsCompletedSuccessfully)
-        {
-            Write("Database connection string for alias {alias} is not found");
-            return;
-        }
-
-        string connectionString = task.Result;
+        string connectionString = GetConnectionString(alias);
+        if (String.IsNullOrEmpty(connectionString)) return;
 
         while (query[cur_pos] == Delim()) ++cur_pos;
 
         string sqlQuery = query.Substring(cur_pos);
 
-        switch (valueType) 
+        ExecuteQuery(valueType, connectionString, sqlQuery,  formatString);
+    }
+
+    public void ExecuteQuery(string valueType, string connectionString,
+                             string sqlQuery,  string formatString)
+    {
+                switch (valueType) 
         {
             case TableSign:
                 var dt = SQLExecutor.ExecuteReader(connectionString,sqlQuery);
