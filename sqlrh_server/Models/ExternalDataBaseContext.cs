@@ -26,6 +26,13 @@ public class ExternalDataBaseContext : DbContext, IExternalDataBaseRepository
 
     public async Task<string> GetConnectionString(string alias)
     {
-        return (await Bases.FirstAsync(b => b.Alias == alias)).connectionString;
+        return (await Bases.FirstAsync(b => b.Alias == alias)).ConnectionString;
+    }
+
+    public async Task<ExternalDatabase> Add(string alias, string connectionString)
+    {
+        return (await Bases.AddAsync(
+            new ExternalDatabase() {Alias = alias, ConnectionString = connectionString}
+                                )).Entity;
     }
 }

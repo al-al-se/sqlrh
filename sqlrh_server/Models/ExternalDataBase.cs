@@ -5,5 +5,5 @@ public class ExternalDatabase
 {
     [Key]
     public string Alias { get; set; }
-    public string connectionString { get; set; }
+    public string ConnectionString { get; set; }
 }
