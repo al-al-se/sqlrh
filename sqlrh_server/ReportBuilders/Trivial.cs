@@ -2,10 +2,6 @@ using System.IO;
 using System.Threading.Tasks;
 class TrivialReportBuilder : IReportBuilder
 {
-    public IExternalDataBaseRepository DataBases {get; set;}
-
-    public ISQLQueryExecutor SQLExecutor {get; set;}
-
     public int DataBaseRepositotyTimeoutMilisec {get; set;}
 
     public IReportBuilder SetDataBaseRepositotyTimeoutMilisec(int value) {return this;}

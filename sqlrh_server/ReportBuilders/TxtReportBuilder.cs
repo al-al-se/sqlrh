@@ -11,8 +11,8 @@ public class TxtReportBuilder : AbstractReportBuilder
     StreamReader source;
     TextWriter destination;
 
-    public TxtReportBuilder(IExternalDataBaseRepository r, ISQLQueryExecutor e) 
-        : base(r,e)
+    public TxtReportBuilder(IEnumerable<ExternalDatabase> r) 
+        : base(r)
     {
 
     }

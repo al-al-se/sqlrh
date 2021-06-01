@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Reflection;
 using System;
 using System.Data;
@@ -5,6 +6,7 @@ using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Text;
+using System.Linq;
 public abstract class AbstractReportBuilder : IReportBuilder
 {
     // sql query in report template:
@@ -52,14 +54,10 @@ public abstract class AbstractReportBuilder : IReportBuilder
         EndRegex = new Regex($"(^|{Delim()}){ClosingTag()}"); 
     }
 
-    public IExternalDataBaseRepository DataBases {get; set;}
-
-    public ISQLQueryExecutor SQLExecutor {get; set;}
-
-     public AbstractReportBuilder(IExternalDataBaseRepository r, ISQLQueryExecutor e)
+    IEnumerable<ExternalDatabase> DataBases;
+     public AbstractReportBuilder(IEnumerable<ExternalDatabase> dbs)
      {
-        DataBases = r;
-        SQLExecutor = e;
+        DataBases = dbs;
      }
 
     public Task BuildAsync(string templatePth, string reportPath)
@@ -203,12 +201,7 @@ public abstract class AbstractReportBuilder : IReportBuilder
     {
         try
         {
-            var task = DataBases.GetConnectionString(alias);
-            task.Wait(DataBaseRepositotyTimeoutMilisec);
-            if (task.IsCompletedSuccessfully)
-            {
-                return task.Result;
-            }
+            return DataBases.First(i => i.Alias == alias).ConnectionString;
         } catch (Exception e)
         {
             //log e
@@ -256,14 +249,16 @@ public abstract class AbstractReportBuilder : IReportBuilder
     public void ExecuteQuery(string valueType, string connectionString,
                              string sqlQuery,  string formatString)
     {
-                switch (valueType) 
+        var exec = new SQLQueryExecutor();
+
+        switch (valueType) 
         {
             case TableSign:
-                var dt = SQLExecutor.ExecuteReader(connectionString,sqlQuery);
+                var dt = exec.ExecuteReader(connectionString,sqlQuery);
                 WriteTable(dt,formatString); 
                 break;
             default:
-                var res = SQLExecutor.ExecuteScalar(connectionString,sqlQuery);
+                var res = exec.ExecuteScalar(connectionString,sqlQuery);
                 WriteScalar(res, formatString);
                 break;
         }

@@ -10,11 +10,9 @@ public interface IReportBuilderService
 
     IExternalDataBaseRepository DataBases {get; init;}
 
-    ISQLQueryExecutor SQLExecutor {get; init;}
-
     Task<string> SaveUploadingReportTemplate(IFormFile uploadingFile);
 
-    string StartReportBuilding(string reportTemplatePath, Action<string> onReportFinished = null);
+    Task<string> StartReportBuilding(string reportTemplatePath, Action<string> onReportFinished = null);
 
     bool CheckReportStartBuilding(string reportPath);
 

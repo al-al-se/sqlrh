@@ -40,11 +40,8 @@ class ReportBuilderService : IReportBuilderService
 
     public IExternalDataBaseRepository DataBases {get; init;}
 
-    public ISQLQueryExecutor SQLExecutor {get; init;}
-
     public ReportBuilderService(IOptions<ReportBuilderOptions> options,
-                IExternalDataBaseRepository dbs,
-                ISQLQueryExecutor exec)
+                IExternalDataBaseRepository dbs)
     {
         _options = options.Value;
 
@@ -53,8 +50,6 @@ class ReportBuilderService : IReportBuilderService
         TempPath = PrepareTempPath();
 
         DataBases = dbs;
-
-        SQLExecutor = exec;
     } 
     public async Task<string> SaveUploadingReportTemplate(IFormFile uploadingFile)
     {
@@ -69,18 +64,19 @@ class ReportBuilderService : IReportBuilderService
         return path;
     }
 
-    protected IReportBuilder GetBuilder(string ext)
+    protected async Task<IReportBuilder> GetBuilder(string ext)
     {
+        var dbs = await DataBases.GetAll();
         switch(ext)
         {
-            case ".txt": return new TxtReportBuilder(DataBases,SQLExecutor);
-            case ".md": return new MdReportBuilder(DataBases,SQLExecutor);
-            case ".html": return new HtmlReportBuilder(DataBases,SQLExecutor);
+            case ".txt": return new TxtReportBuilder(dbs);
+            case ".md": return new MdReportBuilder(dbs);
+            case ".html": return new HtmlReportBuilder(dbs);
             default: return new TrivialReportBuilder();
         }
     }
 
-    public string StartReportBuilding(string reportTemplatePath, Action<string> onReportFinished = null)
+    public async Task<string> StartReportBuilding(string reportTemplatePath, Action<string> onReportFinished = null)
     {
         string name = Path.GetFileNameWithoutExtension(reportTemplatePath);
         string ext = Path.GetExtension(reportTemplatePath);
@@ -88,14 +84,14 @@ class ReportBuilderService : IReportBuilderService
         string fullReportName = Path.Combine(TempPath,reportName);
         string fullTempName = GetTemp(fullReportName);
 
-        var task = GetBuilder(ext).
+        var task = (await GetBuilder(ext)).
             SetDataBaseRepositotyTimeoutMilisec(_options.DataBaseRepositotyTimeoutMilisec).
             BuildAsync(reportTemplatePath,fullTempName).
             ContinueWith(tr => File.Move(fullTempName,fullReportName));
 
         if (onReportFinished != null) 
         {
-            task.ContinueWith(tr => onReportFinished(fullReportName));
+            await task.ContinueWith(tr => onReportFinished(fullReportName));
         }
          
         return fullReportName;
