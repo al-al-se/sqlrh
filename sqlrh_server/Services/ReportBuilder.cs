@@ -80,7 +80,7 @@ class ReportBuilderService : IReportBuilderService
         }
     }
 
-    public string StartReportBuilding(string reportTemplatePath)
+    public string StartReportBuilding(string reportTemplatePath, Action<string> onReportFinished = null)
     {
         string name = Path.GetFileNameWithoutExtension(reportTemplatePath);
         string ext = Path.GetExtension(reportTemplatePath);
@@ -88,10 +88,15 @@ class ReportBuilderService : IReportBuilderService
         string fullReportName = Path.Combine(TempPath,reportName);
         string fullTempName = GetTemp(fullReportName);
 
-        GetBuilder(ext)
-            .BuildAsync(reportTemplatePath,fullTempName)
-                .ContinueWith(tr => File.Move(fullTempName,fullReportName));
-     
+        var task = GetBuilder(ext).
+            BuildAsync(reportTemplatePath,fullTempName).
+            ContinueWith(tr => File.Move(fullTempName,fullReportName));
+
+        if (onReportFinished != null) 
+        {
+            task.ContinueWith(tr => onReportFinished(fullReportName));
+        }
+         
         return fullReportName;
     }
 

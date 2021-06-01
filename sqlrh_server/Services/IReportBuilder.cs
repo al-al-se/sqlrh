@@ -1,3 +1,4 @@
+using System;
 using Microsoft.AspNetCore.Http;
 using System.Threading.Tasks;
 
@@ -13,7 +14,7 @@ public interface IReportBuilderService
 
     Task<string> SaveUploadingReportTemplate(IFormFile uploadingFile);
 
-    string StartReportBuilding(string reportTemplatePath);
+    string StartReportBuilding(string reportTemplatePath, Action<string> onReportFinished = null);
 
     bool CheckReportStartBuilding(string reportPath);
 

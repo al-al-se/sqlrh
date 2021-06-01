@@ -39,6 +39,8 @@ namespace sqlrh_server
                                         ReportBuilderOptions.SectionName));
                                         
             services.AddTransient<IReportBuilderService,ReportBuilderService>();
+
+            services.AddTransient<ISQLQueryExecutor,SQLQueryExecutor>();
                    
             services.AddControllers();
 

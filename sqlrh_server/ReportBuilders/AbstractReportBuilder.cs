@@ -47,14 +47,14 @@ public abstract class AbstractReportBuilder : IReportBuilder
 
     protected void BuildBeginRegex()
     {
-        string s = $"{OpeningTag()}{Delim()}";
+        string s = $"{OpeningTag()}({Delim()}|$)";
         BeginSubstringLength = s.Length;
         BeginRegex = new Regex(s);
     }
 
     protected void BuildEndRegex()
     {
-        string s = $"{Delim()}{ClosingTag()}";
+        string s = $"(^|{Delim()}){ClosingTag()}";
         EndSubstringLength = s.Length;
         EndRegex = new Regex(s); 
     }
@@ -71,7 +71,7 @@ public abstract class AbstractReportBuilder : IReportBuilder
 
     public Task BuildAsync(string templatePth, string reportPath)
     {
-        return new Task(() => Build(templatePth,reportPath));
+        return Task.Run(() => Build(templatePth,reportPath));
     }
 
     public void Build(string templatePth, string reportPath)
@@ -128,7 +128,7 @@ public abstract class AbstractReportBuilder : IReportBuilder
             {
                 FindQueryBegin();
             } 
-            if (QueryBeginFound) 
+            if (QueryBeginFound && !LineParsed) 
             {
                 FindQueryEnd();
             }
