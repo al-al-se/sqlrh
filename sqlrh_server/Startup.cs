@@ -58,6 +58,8 @@ namespace sqlrh_server
 
             app.UseHttpsRedirection();
 
+            app.UseRequestResponseLogging();
+
             app.UseRouting();
 
             app.UseAuthorization();

@@ -32,16 +32,7 @@ namespace sqlrh_server.Controllers
         [HttpGet]
         public async Task<IEnumerable<Report>> GetAll()
         {
-            _logger.LogTrace("Reports.GetAll");
-            try
-            {
-                return await _repository.GetAll();
-            } catch (Exception e)
-            {
-                string errDescr = $"Reports.GetAll exception {e.Message} {e.Source} {e.StackTrace}"; 
-                _logger.LogError(errDescr);
-                throw new Exception(errDescr);
-            }
+            return await _repository.GetAll();
         }
 
         [Route("AddNew")]

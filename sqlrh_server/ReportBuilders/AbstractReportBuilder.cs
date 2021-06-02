@@ -76,10 +76,10 @@ public abstract class AbstractReportBuilder : IReportBuilder
 
             BuildSync();
         }
-        catch (Exception e)
+        catch (Exception)
         {
             CloseFiles();
-            throw e;
+            throw;
         }
 
         CloseFiles();
