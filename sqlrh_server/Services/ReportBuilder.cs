@@ -3,6 +3,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Http;
 using System.Threading.Tasks;
 using System;
+using Microsoft.Extensions.Logging;
 
 class ReportBuilderService : IReportBuilderService
 {
@@ -40,10 +41,15 @@ class ReportBuilderService : IReportBuilderService
 
     public IExternalDataBaseRepository DataBases {get; init;}
 
+    private readonly ILogger<ReportBuilderService> _logger;
+
     public ReportBuilderService(IOptions<ReportBuilderOptions> options,
+                ILogger<ReportBuilderService> logger,
                 IExternalDataBaseRepository dbs)
     {
         _options = options.Value;
+
+        _logger = logger;
 
         ReportTemplatePath = PrepareReportTemplatePath();
 
