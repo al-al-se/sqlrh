@@ -157,7 +157,7 @@ namespace sqlrh_server_tests
 
             tb.Build(srcFileName,dstFileName);
 
-            Assert.Equal(query,tb.QueryText.ToString());
+            Assert.Equal(query,tb.LastFoundQuery);
 
             string writedReport = "";
 

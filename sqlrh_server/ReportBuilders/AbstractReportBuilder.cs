@@ -163,6 +163,8 @@ public abstract class AbstractReportBuilder : IReportBuilder
         }
     }
 
+    public string LastFoundQuery {get; protected set;}
+
     protected void FindQueryEnd()
     {
         var match = EndRegex.Match(inputLine,inputLinePos);
@@ -174,6 +176,9 @@ public abstract class AbstractReportBuilder : IReportBuilder
             QueryText.Append(s);
 
             ParseQueryParametersAndExecute(QueryText.ToString());
+            
+            LastFoundQuery = QueryText.ToString();
+            
             QueryText.Clear();
 
             QueryBeginFound = false;
