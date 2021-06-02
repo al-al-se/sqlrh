@@ -53,7 +53,7 @@ class SQLQueryExecutor : ISQLQueryExecutor
         {
             //log e
             throw new KeyNotFoundException(
-                $"Database {alias} not found, exception : {e.Message} {e.Source} {e.StackTrace}");
+                $"Database '{alias}' not found, exception : {e.Message} {e.Source} {e.StackTrace}");
         }
     }
 }

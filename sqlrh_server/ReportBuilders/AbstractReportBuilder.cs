@@ -223,22 +223,66 @@ public abstract class AbstractReportBuilder : IReportBuilder
 
     public virtual void ParseQueryParametersAndExecute(string query)
     {
+        Logger.LogDebug($"Parse parameters of query '{query}'");
+
         QueryData q = new QueryData();
 
-        int cur_pos = query.IndexOf('{');
+        int cur_pos = 0, prev_pos = 0;
 
-        if (cur_pos == -1) {Write("{ not found"); return;}
+        if (!ParseValueType(query,ref prev_pos, ref cur_pos,q)) {return;}
+
+        if (!ParseFormat(query,ref prev_pos, ref cur_pos,q)) {return;}
+
+        if (!ParseAlias(query,ref prev_pos, ref cur_pos,q)) {return;}
+
+        if (!ParseSQLQuery(query,ref prev_pos, ref cur_pos,q)) {return;}
+
+        ExecuteQuery(q);
+    }
+
+    public bool ParseValueType(string query, ref int prev_pos, ref int cur_pos, QueryData q)
+    {
+        query.IndexOf('{');
+
+        if (cur_pos == -1) 
+        {
+            string msg = "ParseValueType: { not found";
+            Logger.LogError($"In query '{query}' error {msg}");
+            Write(msg);
+            return false;
+        }
 
         q.valueType = query.Substring(0,cur_pos);
 
-        int prev_pos = cur_pos;    
+        return true;
+    }
+
+    public bool ParseFormat(string query, ref int prev_pos, ref int cur_pos, QueryData q)
+    {
         cur_pos = query.IndexOf('}',prev_pos);
 
-        if (cur_pos == -1) {Write("} not found"); return;}
+        if (cur_pos == -1)
+        {
+            string msg = "} not found";
+            Logger.LogError($"In query '{query}' error {msg}");
+            Write(msg);
+            return false;
+        }
 
         q.formatString = query.Substring(prev_pos + 1, cur_pos - prev_pos - 1);
 
-        if (query[++cur_pos] != Delim()) {Write("delimeter not found"); return;}
+        return true;
+    }
+
+    public bool ParseAlias(string query, ref int prev_pos, ref int cur_pos, QueryData q)
+    {
+        if (query[++cur_pos] != Delim())
+        {
+            string msg = "delimeter after format not found";
+            Logger.LogError($"In query '{query}' error {msg}");
+            Write(msg);
+            return false;
+        }
 
         while (query[cur_pos] == Delim()) ++cur_pos;
  
@@ -246,15 +290,19 @@ public abstract class AbstractReportBuilder : IReportBuilder
 
         while (query[cur_pos] != Delim()) ++cur_pos;
 
-        string alias = query.Substring(prev_pos, cur_pos - prev_pos);
+        q.alias = query.Substring(prev_pos, cur_pos - prev_pos);
 
+        return true;
+    }
+
+    public bool ParseSQLQuery(string query, ref int prev_pos, ref int cur_pos, QueryData q)
+    {
         while (query[cur_pos] == Delim()) ++cur_pos;
 
         q.sqlQuery = query.Substring(cur_pos);
 
-        ExecuteQuery(q);
+        return true;
     }
-
 
     public void ExecuteQuery(QueryData q)
     {
