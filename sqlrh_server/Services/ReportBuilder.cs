@@ -66,12 +66,12 @@ class ReportBuilderService : IReportBuilderService
 
     protected async Task<IReportBuilder> GetBuilder(string ext)
     {
-        var dbs = await DataBases.GetAll();
+        var exec = new SQLQueryExecutor(await DataBases.GetAll());
         switch(ext)
         {
-            case ".txt": return new TxtReportBuilder(dbs);
-            case ".md": return new MdReportBuilder(dbs);
-            case ".html": return new HtmlReportBuilder(dbs);
+            case ".txt": return new TxtReportBuilder(exec);
+            case ".md": return new MdReportBuilder(exec);
+            case ".html": return new HtmlReportBuilder(exec);
             default: return new TrivialReportBuilder();
         }
     }

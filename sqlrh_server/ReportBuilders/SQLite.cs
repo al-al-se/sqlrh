@@ -1,7 +1,7 @@
 using System.Data;
 using Microsoft.Data.Sqlite;
 
-public class SQLiteExecutor : ISQLQueryExecutor
+public class SQLiteExecutor : IDBMSExecutor
 {
     public DataTable ExecuteReader(string connectionString, string query)
     {

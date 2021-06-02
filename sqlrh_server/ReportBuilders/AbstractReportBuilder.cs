@@ -54,10 +54,10 @@ public abstract class AbstractReportBuilder : IReportBuilder
         EndRegex = new Regex($"(^|{Delim()}){ClosingTag()}"); 
     }
 
-    IEnumerable<ExternalDatabase> DataBases;
-     public AbstractReportBuilder(IEnumerable<ExternalDatabase> dbs)
+    ISQLQueryExecutor sqlExecutor;
+     public AbstractReportBuilder(ISQLQueryExecutor e)
      {
-        DataBases = dbs;
+        sqlExecutor = e;
      }
 
     public Task BuildAsync(string templatePth, string reportPath)
@@ -200,29 +200,6 @@ public abstract class AbstractReportBuilder : IReportBuilder
         return this;
     }
 
-    public ExternalDatabase GetDB(string alias)
-    {
-        try
-        {
-            return DataBases.First(i => i.Alias == alias);
-        } catch (Exception e)
-        {
-            //log e
-        }
-
-        Write($"Database connection string for alias '{alias}' is not found");
-        return null;
-    }
-
-    public class QueryData
-    {
-        public string valueType;
-
-        public ExternalDatabase database;
-        public string sqlQuery;
-        public string formatString;
-    }
-
     public virtual void ParseQueryParametersAndExecute(string query)
     {
         QueryData q = new QueryData();
@@ -250,9 +227,6 @@ public abstract class AbstractReportBuilder : IReportBuilder
 
         string alias = query.Substring(prev_pos, cur_pos - prev_pos);
 
-        q.database = GetDB(alias);
-        if (q.database == null) return;
-
         while (query[cur_pos] == Delim()) ++cur_pos;
 
         q.sqlQuery = query.Substring(cur_pos);
@@ -260,31 +234,17 @@ public abstract class AbstractReportBuilder : IReportBuilder
         ExecuteQuery(q);
     }
 
-    public ISQLQueryExecutor GetSQLQueryExecutor(QueryData q)
-    {
-        switch (q.database.DBMS.ToLower())
-        {
-            case "sqlite":
-                return new SQLiteExecutor();
-            default:
-                Write($"DBMS {q.database.DBMS} driver is not found");
-                return null;
-        }
-    }
 
     public void ExecuteQuery(QueryData q)
     {
-        ISQLQueryExecutor exec = GetSQLQueryExecutor(q);
-        if (exec == null) return;
-
         switch (q.valueType) 
         {
             case TableSign:
-                var dt = exec.ExecuteReader(q.database.ConnectionString,q.sqlQuery);
+                var dt = sqlExecutor.ExecuteReader(q);
                 WriteTable(dt,q.formatString); 
                 break;
             default:
-                var res = exec.ExecuteScalar(q.database.ConnectionString,q.sqlQuery);
+                var res = sqlExecutor.ExecuteScalar(q);
                 WriteScalar(res, q.formatString);
                 break;
         }

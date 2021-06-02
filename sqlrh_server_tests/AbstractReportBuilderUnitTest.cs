@@ -4,6 +4,7 @@ using System;
 using Xunit;
 using Moq;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace sqlrh_server_tests
 {
@@ -12,11 +13,18 @@ namespace sqlrh_server_tests
         [Fact]
         public void WriteScalarTest()
         {
-            var dbMock = new Mock<IExternalDataBaseRepository>();
+            List<ExternalDatabase> dbs = new List<ExternalDatabase>{
+                new ExternalDatabase()
+                {
+                    Alias = "1",
+                    DBMS = "2",
+                    ConnectionString = "3"
+                }
+            };
 
             var sqlMock = new Mock<ISQLQueryExecutor>();
 
-            TxtReportBuilder tb = new TxtReportBuilder(dbMock.Object, sqlMock.Object);
+            TxtReportBuilder tb = new TxtReportBuilder(dbs);
 
             string srcFileName = Path.Combine(Directory.GetCurrentDirectory(),"src.txt");
             
