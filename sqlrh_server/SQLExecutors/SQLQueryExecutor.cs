@@ -30,6 +30,14 @@ class SQLQueryExecutor : ISQLQueryExecutor
         {
             case "sqlite":
                 return new SQLiteExecutor();
+            case "mysql":
+                return new MySqlExecutor();
+            case "sqlserver":
+                return new SQLServerExecutor();
+            case "orecle":
+                return new OracleExecutor();
+            case "postgresql":
+                return new PostgreSQLExecutor();
             default:
                 throw new KeyNotFoundException(
                     $"DBMS driver for {q.database.DBMS} not found");
