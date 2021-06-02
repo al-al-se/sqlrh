@@ -10,10 +10,7 @@ namespace sqlrh_server_tests
 {
     public class AbstractReportBuilderUnitTest
     {
-        [Fact]
-        public void WriteScalarTest()
-        {
-            List<ExternalDatabase> dbs = new List<ExternalDatabase>{
+        List<ExternalDatabase> dbs = new List<ExternalDatabase>{
                 new ExternalDatabase()
                 {
                     Alias = "1",
@@ -22,9 +19,17 @@ namespace sqlrh_server_tests
                 }
             };
 
-            var sqlMock = new Mock<ISQLQueryExecutor>();
+        Mock<ISQLQueryExecutor> sqlMock = new Mock<ISQLQueryExecutor>();
 
-            TxtReportBuilder tb = new TxtReportBuilder(dbs);
+        public AbstractReportBuilderUnitTest()
+        {
+
+        }
+
+        [Fact]
+        public void WriteScalarTest()
+        {
+            TxtReportBuilder tb = new TxtReportBuilder(sqlMock.Object);
 
             string srcFileName = Path.Combine(Directory.GetCurrentDirectory(),"src.txt");
             
@@ -79,21 +84,16 @@ namespace sqlrh_server_tests
         [Fact]
         public void ExecuteQueryTest()
         {
-            string query = "s{,4:f1} db1 select min(value) from table_a";
-
-            var dbMock = new Mock<IExternalDataBaseRepository>();
-            dbMock.Setup(a => a.GetConnectionString(It.IsNotNull<string>())).
-                Returns(new Task<string>(() => "db1_cs"));
+            string query = "s{,4:f1} db1 select min(value) from table_a";           
 
             object value = 1.23456789;
 
-            string expected_result = " 1,2";
-
-            var sqlMock = new Mock<ISQLQueryExecutor>();
-            sqlMock.Setup(a => a.ExecuteScalar(It.IsNotNull<string>(),It.IsNotNull<string>())).
+            sqlMock.Setup(a => a.ExecuteScalar(It.IsNotNull<QueryData>())).
                 Returns(value);
 
-            TxtReportBuilder tb = new TxtReportBuilder(dbMock.Object, sqlMock.Object);
+            string expected_result = " 1,2";
+
+            TxtReportBuilder tb = new TxtReportBuilder(sqlMock.Object);
 
             string srcFileName = Path.Combine(Directory.GetCurrentDirectory(),"src3.txt");
             
@@ -108,7 +108,7 @@ namespace sqlrh_server_tests
                 {
                     tb.OpenFilesForMock(src,dst);
 
-                    tb.ExecuteQuery(query);
+                    tb.ParseQueryParametersAndExecute(query);
 
                     string obtained_result = dst.ToString();
                     
@@ -124,19 +124,14 @@ namespace sqlrh_server_tests
         {
             string query = "s{,4:f1} db1 select min(value) from table_a where id > 2";
 
-            var dbMock = new Mock<IExternalDataBaseRepository>();
-            dbMock.Setup(a => a.GetConnectionString(It.IsNotNull<string>())).
-                Returns(new Task<string>(() => "db1_cs"));
-
             object value = 1.23456789;
 
             string expected_result = " 1,2";
 
-            var sqlMock = new Mock<ISQLQueryExecutor>();
-            sqlMock.Setup(a => a.ExecuteScalar(It.IsNotNull<string>(),It.IsNotNull<string>())).
+            sqlMock.Setup(a => a.ExecuteScalar(It.IsNotNull<QueryData>())).
                 Returns(value);
 
-            TxtReportBuilder tb = new TxtReportBuilder(dbMock.Object, sqlMock.Object);
+            TxtReportBuilder tb = new TxtReportBuilder(sqlMock.Object);
 
             StringBuilder reportTemplate = new StringBuilder();
             StringBuilder expectedReport = new StringBuilder();
