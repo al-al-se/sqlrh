@@ -47,8 +47,10 @@ namespace sqlrh_server.Controllers
             {
                 return new  CreatedResult(alias,
                                 await _repository.Change(alias,connectionString));
+            } else{
+                _logger.LogError($"Database {alias} not found");
+                return new  NotFoundResult();
             }
-            return new  NotFoundResult();
         }
     }
 }

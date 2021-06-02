@@ -91,6 +91,7 @@ class ReportBuilderService : IReportBuilderService
         string fullTempName = GetTemp(fullReportName);
 
         var task = (await GetBuilder(ext)).
+            SetLogger(_logger).
             SetDataBaseRepositotyTimeoutMilisec(_options.DataBaseRepositotyTimeoutMilisec).
             BuildAsync(reportTemplatePath,fullTempName).
             ContinueWith(tr => File.Move(fullTempName,fullReportName));
@@ -108,7 +109,6 @@ class ReportBuilderService : IReportBuilderService
         return $"{f}.tmp";
     }
     
-
     public bool CheckReportStartBuilding(string reportPath)
     {
         return File.Exists(GetTemp(reportPath)) || File.Exists(reportPath);

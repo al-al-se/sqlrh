@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Text;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 public abstract class AbstractReportBuilder : IReportBuilder
 {
     // sql query in report template:
@@ -55,6 +56,9 @@ public abstract class AbstractReportBuilder : IReportBuilder
     }
 
     ISQLQueryExecutor sqlExecutor;
+
+    public ILogger Logger {get; set;}
+    public IReportBuilder SetLogger(ILogger l) {Logger = l; return this;}
      public AbstractReportBuilder(ISQLQueryExecutor e)
      {
         sqlExecutor = e;
@@ -62,27 +66,39 @@ public abstract class AbstractReportBuilder : IReportBuilder
 
     public Task BuildAsync(string templatePth, string reportPath)
     {
+        Logger.LogInformation($"Start async building from {templatePth} to {reportPath}");
         return Task.Run(() => Build(templatePth,reportPath));
     }
 
     public void Build(string templatePth, string reportPath)
     {
-        BuildBeginRegex();
-        BuildEndRegex();
-
-        OpenFiles(templatePth,reportPath);
+        Logger.LogInformation($"Start building from {templatePth} to {reportPath}");
 
         try{
+            BuildBeginRegex();
+            BuildEndRegex();
 
-            BuildSync();
-        }
-        catch (Exception)
-        {
+            OpenFiles(templatePth,reportPath);
+
+            try{
+
+                BuildSync();
+            }
+            catch (Exception e)
+            {
+                Logger.LogInformation(
+                    $"Exception at  building report  from {templatePth} to {reportPath} :" + 
+                    $"{Environment.NewLine} {e.Message} {e.Source} {Environment.NewLine} {e.StackTrace}");
+            }
+
             CloseFiles();
-            throw;
-        }
 
-        CloseFiles();
+        } catch (Exception e)
+        {
+            Logger.LogInformation(
+                $"Exception at  building report  from {templatePth} to {reportPath} :" + 
+                $"{Environment.NewLine} {e.Message} {e.Source} {Environment.NewLine} {e.StackTrace}");
+        }
     }
 
     protected abstract void OpenFiles(string templatePth, string reportPath);

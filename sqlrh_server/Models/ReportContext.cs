@@ -1,3 +1,4 @@
+using System;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,24 +26,52 @@ public class ReportContext : DbContext, IReportRepository
         modelBuilder.Entity<ExternalDatabase>().ToTable("ExternalDatabases");
     }
 
-    public async Task<Report> Add(string name)
+    public async  Task<int> GenerateNewId()
     {
-        int c = await Reports.CountAsync();
         // sqlite has not sequences
-        // collision unlikely
-        var n = ( await Reports.AddAsync(new Report() {Id = c + 1, Name = name})).Entity;
-        await SaveChangesAsync();
-        return n;
+        int max = await Reports.MaxAsync(r => r.Id);
+        int count = await Reports.CountAsync();
+
+        if (2 * count < max)
+        {
+            for (int i = 0; i < max; i++)
+            {
+                if (!await Reports.AnyAsync(r => r.Id == i))
+                {
+                    return i;
+                }
+            }
+        }
+
+        return max + 1;
     }
+
 
     public async Task<bool> ContainsId(int id)
     {
         return await Reports.AnyAsync(r => r.Id == id);
     }
 
+    public async Task<Report> Add(string name)
+    {
+        var n = ( await Reports.AddAsync(
+                                new Report() 
+                                {
+                                    Id = await GenerateNewId(),
+                                    Name = name
+                                })).Entity;
+        await SaveChangesAsync();
+        return n;
+    }
+
     public async Task<Report> GetReport(int id)
     {
-        return await Reports.FirstAsync(r => r.Id == id);
+        try{
+            return await Reports.FirstAsync(r => r.Id == id);
+        } catch (InvalidOperationException)
+        {
+            throw new InvalidOperationException($"Report template with id = {id} not found");
+        }
     }
 
     public async Task<Report> LoadFile(int id, string path)

@@ -56,6 +56,10 @@ namespace sqlrh_server.Controllers
                         var r =  await _repository.LoadFile(id,path);
                         return new  CreatedResult(r.Name, r);
                     }
+                } else
+                {
+                    _logger.LogError($"Report id = {id} not found");
+                    return new NotFoundResult();
                 }
             } 
 
@@ -72,8 +76,11 @@ namespace sqlrh_server.Controllers
                 var dest = await _builder.StartReportBuilding(r.FilePath);
 
                 return new  CreatedResult(r.Name, dest);
+            } else
+            {
+                _logger.LogError($"Report id = {id} not found");
+                return new  NotFoundResult();
             }
-            return new  NotFoundResult();
         }
 
         string MimeType(string path)

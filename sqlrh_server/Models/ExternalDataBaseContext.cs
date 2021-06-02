@@ -1,3 +1,4 @@
+using System;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,7 +21,12 @@ public class ExternalDataBaseContext : DbContext, IExternalDataBaseRepository
 
     public async Task<ExternalDatabase> Get(string alias)
     {
-        return await ExternalDatabases.FirstAsync(i => i.Alias == alias);
+        try{
+            return await ExternalDatabases.FirstAsync(i => i.Alias == alias);
+        } catch (InvalidOperationException)
+        {
+            throw new InvalidOperationException($"Database with alias = {alias} not found");
+        }
     }
 
     public async Task<string> GetConnectionString(string alias)
