@@ -1,34 +1,15 @@
 using System.Data;
 using System.Data.SqlClient;
 
-public class SQLServerExecutor : IDBMSExecutor
+public class SQLServerExecutor : GenericExecutor<SqlConnection,SqlCommand>
 {
-    public DataTable ExecuteReader(string connectionString, string query)
+    protected override SqlConnection NewConnection(string connectionString)
     {
-        using (var connection = new SqlConnection(connectionString))
-        {          
-            connection.Open();
-            
-            var command = new SqlCommand(query, connection);
-
-            DataTable dt = new DataTable();
-            using (var reader = command.ExecuteReader())
-            {
-                dt.Load(reader);    
-            }
-            return dt;            
-        }
+        return new SqlConnection(connectionString);
     }
 
-    public object ExecuteScalar(string connectionString, string query)
+    protected override SqlCommand NewCommand(string query, SqlConnection connection)
     {
-        using (var connection = new SqlConnection(connectionString))
-        {          
-            connection.Open();
-            
-            var command = new SqlCommand(query, connection);
-
-            return command.ExecuteScalar();
-        }
+        return new SqlCommand(query,connection);
     }
 }

@@ -1,34 +1,15 @@
 using System.Data;
 using Oracle.ManagedDataAccess.Client;
 
-public class OracleExecutor : IDBMSExecutor
+public class OracleExecutor : GenericExecutor<OracleConnection,OracleCommand>
 {
-    public DataTable ExecuteReader(string connectionString, string query)
+    protected override OracleConnection NewConnection(string connectionString)
     {
-        using (var connection = new OracleConnection(connectionString))
-        {          
-            connection.Open();
-            
-            var command = new OracleCommand(query, connection);
-
-            DataTable dt = new DataTable();
-            using (var reader = command.ExecuteReader())
-            {
-                dt.Load(reader);    
-            }
-            return dt;            
-        }
+        return new OracleConnection(connectionString);
     }
 
-    public object ExecuteScalar(string connectionString, string query)
+    protected override OracleCommand NewCommand(string query, OracleConnection connection)
     {
-        using (var connection = new OracleConnection(connectionString))
-        {          
-            connection.Open();
-            
-            var command = new OracleCommand(query, connection);
-
-            return command.ExecuteScalar();
-        }
+        return new OracleCommand(query,connection);
     }
 }

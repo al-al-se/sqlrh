@@ -1,34 +1,15 @@
 using System.Data;
 using Microsoft.Data.Sqlite;
 
-public class SQLiteExecutor : IDBMSExecutor
+public class SQLiteExecutor : GenericExecutor<SqliteConnection,SqliteCommand>
 {
-    public DataTable ExecuteReader(string connectionString, string query)
+    protected override SqliteConnection NewConnection(string connectionString)
     {
-        using (var connection = new SqliteConnection(connectionString))
-        {          
-            connection.Open();
-            
-            var command = new SqliteCommand(query, connection);
-
-            DataTable dt = new DataTable();
-            using (var reader = command.ExecuteReader())
-            {
-                dt.Load(reader);    
-            }
-            return dt;            
-        }
+        return new SqliteConnection(connectionString);
     }
 
-    public object ExecuteScalar(string connectionString, string query)
+    protected override SqliteCommand NewCommand(string query, SqliteConnection connection)
     {
-        using (var connection = new SqliteConnection(connectionString))
-        {          
-            connection.Open();
-            
-            var command = new SqliteCommand(query, connection);
-
-            return command.ExecuteScalar();
-        }
+        return new SqliteCommand(query,connection);
     }
 }
