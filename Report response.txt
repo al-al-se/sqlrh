@@ -1,0 +1,28 @@
+Report
+
+Prepare data:
+db1:
+create tbl1 (id int, value float);
+insert into tbl1 values (1, 0.23);
+insert into tbl1 values (2, 0.3);
+insert into tbl1 values (3, 0.4);
+insert into tbl1 values (4, 0.123456789);
+
+Test report:
+
+Table 1:
+
+
+
+--------------
+| id | value |
+--------------
+| 1   | 0,40 |
+--------------
+| 2   | 0,30 |
+--------------
+| 3   | 0,23 |
+--------------
+
+count: 3, min: 0,235, max: 0,400
+
