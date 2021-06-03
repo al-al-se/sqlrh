@@ -12,6 +12,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 namespace sqlrh_server
 {
@@ -32,11 +33,19 @@ namespace sqlrh_server
             services.AddDbContext<IReportRepository,ReportContext>(options => options.UseSqlite(connection));
            
             services.AddDbContext<IExternalDataBaseRepository,ExternalDataBaseContext>(options => options.UseSqlite(connection));
+
+            services.AddDbContext<IUserRepository,UserContext>(options => options.UseSqlite(connection));
             
             services.Configure<ReportBuilderOptions>(Configuration.GetSection(
                                         ReportBuilderOptions.SectionName));
                                         
             services.AddScoped<IReportBuilderService,ReportBuilderService>();
+
+            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddCookie(options => //CookieAuthenticationOptions
+                {
+                    options.LoginPath = new Microsoft.AspNetCore.Http.PathString("/Account/Login");
+                });
                    
             services.AddControllers();
 
@@ -62,6 +71,8 @@ namespace sqlrh_server
 
             app.UseRouting();
 
+            app.UseAuthentication();
+            
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
