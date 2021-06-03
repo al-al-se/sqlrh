@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations;
 public class SqlrhUser
 {
     [Key]
-    public int id {get; set;}
+    public int Id {get; set;}
 
     public string Login {get; set;}
 
@@ -19,4 +19,12 @@ public class SqlrhUser
     public string XMPPAddress {get; set;}
 
     public string PhoneNumber {get; set;}
+
+    public void Copy(SqlrhUser other)
+    {
+        Name = other.Name;
+        EmailAddress = other.EmailAddress;
+        XMPPAddress = other.XMPPAddress;
+        PhoneNumber = other.PhoneNumber;
+    }
 }

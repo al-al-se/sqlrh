@@ -44,12 +44,12 @@ namespace sqlrh_server.Controllers
         [HttpPost]
         public async Task<IActionResult> Update(SqlrhUser u)
         {
-            if (await _repository.Contains(u.id))
+            if (await _repository.Contains(u.Id))
             {
                 return new  CreatedResult(u.Name,
                                 await _repository.Update(u));
             } else{
-                _logger.LogError($"User with id = '{u.id}' not found");
+                _logger.LogError($"User with id = '{u.Id}' not found");
                 return new  NotFoundResult();
             }
         }

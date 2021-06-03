@@ -9,6 +9,8 @@ public interface IUserRepository
 
     Task<bool> Contains(int id);
 
+    Task<SqlrhUser> Get(int id);
+
     Task<SqlrhUser> Update(SqlrhUser u);
 
     Task Delete(int id);
