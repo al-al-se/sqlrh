@@ -2,11 +2,12 @@ using System.Text;
 using System.IO;
 using System.Data;
 using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
 
 class MdReportBuilder : TxtReportBuilder
 {
-    public MdReportBuilder(ISQLQueryExecutor  r) 
-        : base(r)
+    public MdReportBuilder(ISQLQueryExecutor  r, ILogger l) 
+        : base(r, l)
     {
 
     }

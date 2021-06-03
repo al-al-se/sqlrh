@@ -59,9 +59,10 @@ public abstract class AbstractReportBuilder : IReportBuilder
 
     public ILogger Logger {get; set;}
     public IReportBuilder SetLogger(ILogger l) {Logger = l; return this;}
-     public AbstractReportBuilder(ISQLQueryExecutor e)
+     public AbstractReportBuilder(ISQLQueryExecutor e, ILogger l)
      {
         sqlExecutor = e;
+        Logger = l;
      }
 
     public Task BuildAsync(string templatePth, string reportPath)
@@ -242,7 +243,7 @@ public abstract class AbstractReportBuilder : IReportBuilder
 
     public bool ParseValueType(string query, ref int prev_pos, ref int cur_pos, QueryData q)
     {
-        query.IndexOf('{');
+        cur_pos = query.IndexOf('{');
 
         if (cur_pos == -1) 
         {
@@ -259,6 +260,7 @@ public abstract class AbstractReportBuilder : IReportBuilder
 
     public bool ParseFormat(string query, ref int prev_pos, ref int cur_pos, QueryData q)
     {
+        prev_pos = cur_pos;
         cur_pos = query.IndexOf('}',prev_pos);
 
         if (cur_pos == -1)

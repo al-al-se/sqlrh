@@ -2,11 +2,12 @@ using System.Text;
 using System.IO;
 using System.Data;
 using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
 
 class HtmlReportBuilder : TxtReportBuilder
 {
-    public HtmlReportBuilder(ISQLQueryExecutor  r) 
-        : base(r)
+    public HtmlReportBuilder(ISQLQueryExecutor  r, ILogger l) 
+        : base(r,l)
     {
 
     }

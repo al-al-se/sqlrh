@@ -75,9 +75,9 @@ class ReportBuilderService : IReportBuilderService
         var exec = new SQLQueryExecutor(await DataBases.GetAll());
         switch(ext)
         {
-            case ".txt": return new TxtReportBuilder(exec);
-            case ".md": return new MdReportBuilder(exec);
-            case ".html": return new HtmlReportBuilder(exec);
+            case ".txt": return new TxtReportBuilder(exec, _logger);
+            case ".md": return new MdReportBuilder(exec,_logger);
+            case ".html": return new HtmlReportBuilder(exec, _logger);
             default: return new TrivialReportBuilder();
         }
     }
@@ -91,7 +91,6 @@ class ReportBuilderService : IReportBuilderService
         string fullTempName = GetTemp(fullReportName);
 
         var task = (await GetBuilder(ext)).
-            SetLogger(_logger).
             SetDataBaseRepositotyTimeoutMilisec(_options.DataBaseRepositotyTimeoutMilisec).
             BuildAsync(reportTemplatePath,fullTempName).
             ContinueWith(tr => File.Move(fullTempName,fullReportName));

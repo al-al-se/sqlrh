@@ -3,11 +3,14 @@ using Xunit;
 using Moq;
 using System.Data;
 using System.IO;
+using Microsoft.Extensions.Logging;
 
 namespace sqlrh_server_tests
 {
     public class TxtReportBuilderUnitTest
     {
+        Mock<ILogger> LoggerMock = new Mock<ILogger>();
+
         [Fact]
         public void WriteTableTest()
         {
@@ -15,7 +18,7 @@ namespace sqlrh_server_tests
 
             var sqlMock = new Mock<ISQLQueryExecutor>();
 
-            TxtReportBuilder tb = new TxtReportBuilder(sqlMock.Object);
+            TxtReportBuilder tb = new TxtReportBuilder(sqlMock.Object, LoggerMock.Object);
 
             string srcFileName = Path.Combine(Directory.GetCurrentDirectory(),"src2.txt");
             

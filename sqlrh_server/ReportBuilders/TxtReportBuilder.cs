@@ -5,14 +5,15 @@ using System.Text;
 using System.IO;
 using System.Data;
 using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
 
 public class TxtReportBuilder : AbstractReportBuilder
 {
     StreamReader source;
     TextWriter destination;
 
-    public TxtReportBuilder(ISQLQueryExecutor r) 
-        : base(r)
+    public TxtReportBuilder(ISQLQueryExecutor r, ILogger l) 
+        : base(r, l)
     {
 
     }
