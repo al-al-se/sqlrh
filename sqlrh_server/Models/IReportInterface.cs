@@ -12,4 +12,6 @@ public interface IReportRepository
     Task<Report> GetReport(int id);
 
     Task<Report> LoadFile(int id, string path);
+
+    Task Delete(int id);
 }

@@ -13,4 +13,6 @@ public interface IExternalDataBaseRepository
     Task<bool> Contains(string alias);
 
     Task<ExternalDatabase> Change(string alias, string connectionString);
+
+    Task Delete(string alias);
 }

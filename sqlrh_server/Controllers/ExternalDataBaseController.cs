@@ -52,5 +52,21 @@ namespace sqlrh_server.Controllers
                 return new  NotFoundResult();
             }
         }
+
+
+        [Route("Delete")]
+        [HttpDelete]
+        public async Task<IActionResult> Delete(string alias)
+        {
+            if (await _repository.Contains(alias))
+            {
+                await _repository.Delete(alias);
+                return new  OkResult();
+            } else
+            {
+                _logger.LogError($"Database '{alias}' not found");
+                return new  NotFoundResult();
+            }
+        }
     }
 }

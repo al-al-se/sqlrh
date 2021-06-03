@@ -81,4 +81,11 @@ public class ReportContext : DbContext, IReportRepository
        await SaveChangesAsync();
        return r;
     }
+
+    public async Task Delete(int id)
+    {
+        var b = await GetReport(id);
+        Reports.Remove(b);
+        await SaveChangesAsync();
+    }
 }

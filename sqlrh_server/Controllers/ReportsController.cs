@@ -111,5 +111,20 @@ namespace sqlrh_server.Controllers
             }
             return new NotFoundResult();
         }
+
+        [Route("DeleteReport")]
+        [HttpDelete]
+        public async Task<IActionResult> Delete(int id)
+        {
+            if (await _repository.ContainsId(id))
+            {
+                await _repository.Delete(id);
+                return new  OkResult();
+            } else
+            {
+                _logger.LogError($"Report id = {id} not found");
+                return new  NotFoundResult();
+            }
+        }
     }
 }

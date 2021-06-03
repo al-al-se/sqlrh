@@ -60,4 +60,11 @@ public class ExternalDataBaseContext : DbContext, IExternalDataBaseRepository
         await SaveChangesAsync();
         return b;
     }
+
+    public async Task Delete(string alias)
+    {
+        var b = await Get(alias);
+        ExternalDatabases.Remove(b);
+        await SaveChangesAsync();
+    }
 }
