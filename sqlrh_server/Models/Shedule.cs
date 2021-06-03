@@ -9,7 +9,7 @@ public class Shedule
 
     public Report ReportTemplate {get; set;}
 
-    public User Recipient {get; set;}
+    public SqlrhUser Recipient {get; set;}
 
     bool SendByEmail {get; set;}
 

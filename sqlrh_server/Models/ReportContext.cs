@@ -8,6 +8,10 @@ public class ReportContext : DbContext, IReportRepository
 {
     private DbSet<Report> Reports { get; set; }
 
+    private DbSet<AccessRule> Access {get; set;}
+
+    private DbSet<Shedule> Shedules {get; set;}
+
     public  async Task<IEnumerable<Report>> GetAll()
     {
         var r = await Reports.ToListAsync();
@@ -24,6 +28,9 @@ public class ReportContext : DbContext, IReportRepository
     {
         modelBuilder.Entity<Report>().ToTable("Reports");
         modelBuilder.Entity<ExternalDatabase>().ToTable("ExternalDatabases");
+        modelBuilder.Entity<AccessRule>().ToTable("Access");
+        modelBuilder.Entity<SqlrhUser>().ToTable("Users");
+        modelBuilder.Entity<Shedule>().ToTable("Shedule");
     }
 
     public async  Task<int> GenerateNewId()

@@ -3,20 +3,20 @@ using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 
 [Index("Id", IsUnique =true)]
-public class User
+public class SqlrhUser
 {
     [Key]
-    int id {get; set;}
+    public int id {get; set;}
 
-    string Login {get; set;}
+    public string Login {get; set;}
 
-    bool Admin {get; set;}
+    public bool Admin {get; set;}
 
-    string Name {get; set;}
+    public string Name {get; set;}
 
-    string EmailAddress {get; set;}
+    public string EmailAddress {get; set;}
 
-    string XMPPAddress {get; set;}
+    public string XMPPAddress {get; set;}
 
-    string PhoneNumber {get; set;}
+    public string PhoneNumber {get; set;}
 }
