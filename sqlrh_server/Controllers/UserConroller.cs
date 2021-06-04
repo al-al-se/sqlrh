@@ -100,6 +100,15 @@ namespace sqlrh_server.Controllers
         [HttpPost]
         public async Task<IActionResult> Login([FromForm]LoginData d)
         {
+            if ((await _repository.Count()) == 0)
+            {
+                //create admin
+                var n = new SqlrhUser(d.Login);
+                n.PasswordHash =  _PasswordHasher.HashPassword(n, d.Password);
+                n.Admin = true;
+                await _repository.Add(n);
+            }
+
             if (!String.IsNullOrEmpty(d.Login) && !String.IsNullOrEmpty(d.Password))
             {
                 if (await _repository.Contains(d.Login))

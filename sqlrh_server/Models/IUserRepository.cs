@@ -5,6 +5,8 @@ public interface IUserRepository
 {
     Task<IEnumerable<SqlrhUser>> GetAll();
 
+    Task<int> Count();
+
     Task<SqlrhUser> Add(SqlrhUser newUser);
 
     Task<bool> Contains(string login);

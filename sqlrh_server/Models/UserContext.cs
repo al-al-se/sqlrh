@@ -22,6 +22,11 @@ public class UserContext : DbContext, IUserRepository
         modelBuilder.Entity<SqlrhUser>().ToTable("Users");
         modelBuilder.Entity<Shedule>().ToTable("Shedule");
     }
+
+    public  async Task<int> Count()
+    {
+        return await Users.CountAsync();
+    }
     public  async Task<IEnumerable<SqlrhUser>> GetAll()
     {
         var r = await Users.ToListAsync();
