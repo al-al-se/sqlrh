@@ -14,7 +14,7 @@ public class MyPasswordHasher : IPasswordHasher<SqlrhUser>
 
     public string GenerateSaltedPassword(SqlrhUser u, string password)
     {
-        return $"{password}{_options.Value.Salt}{u.Login}";
+        return $"{password}{1000 - password.Length}{_options.Value.Salt}{u.Login}";
     }
 
     public string HashPassword(SqlrhUser u, string password)
