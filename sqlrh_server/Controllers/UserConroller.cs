@@ -15,7 +15,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using System.IO;
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace sqlrh_server.Controllers
 {
@@ -40,9 +40,17 @@ namespace sqlrh_server.Controllers
 
         [Route("GetAll")]
         [HttpGet]
+        [Authorize]
         public async Task<IEnumerable<SqlrhUser>> GetAll()
         {
-            return await _repository.GetAll();
+            string login = User.Identity.Name;
+            var user = await _repository.Get(login);
+            if (user.Admin)
+            {
+                return await _repository.GetAll();
+            } else{
+                return new List<SqlrhUser>();
+            }
         }
 
         [Route("Update")]
@@ -160,7 +168,7 @@ namespace sqlrh_server.Controllers
         public async Task<IActionResult> Logout()
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            return RedirectToAction("Login", "Account");
+            return RedirectToAction("Login", "User");
         }
     }
 }
