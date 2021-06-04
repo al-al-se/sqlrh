@@ -8,6 +8,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 namespace sqlrh_server.Controllers
 {
@@ -70,7 +73,7 @@ namespace sqlrh_server.Controllers
         [HttpGet]
         public IActionResult Login()
         {
-            return ;
+            return Content(HttpContext.User.FindFirstValue(ClaimsIdentity.DefaultNameClaimType));
         }
 
         [HttpPost]
@@ -82,10 +85,7 @@ namespace sqlrh_server.Controllers
                 if (await _repository.Contains(login))
                 {
                     SqlrhUser user = await _repository.Get(login);
-                    if (await Authenticate(user, password))
-                        return new OkResult();
-                    else
-                        return new NotFoundResult();
+                    return await Authenticate(user, password);
                 } else{
                     return new NotFoundResult();
                 }
@@ -105,24 +105,36 @@ namespace sqlrh_server.Controllers
                     return new ConflictResult();
                 }
                 var n = new SqlrhUser(login);
-                n.PasswordHash =  _PasswordHasher.HashPassword(n, password));
+                n.PasswordHash =  _PasswordHasher.HashPassword(n, password);
                 new  CreatedResult(n.Name,
                          await _repository.Add(n));              
             }
             return new BadRequestResult();
         }
  
-        private async Task<bool> Authenticate(SqlrhUser user, string password)
+        private async Task<IActionResult> Authenticate(SqlrhUser user, string password)
         {
-            // создаем один claim
-            var claims = new List<Claim>
+            switch (_PasswordHasher.VerifyHashedPassword(user,user.PasswordHash,password))
             {
-                new Claim(ClaimsIdentity.DefaultNameClaimType, userName)
-            };
-            // создаем объект ClaimsIdentity
-            ClaimsIdentity id = new ClaimsIdentity(claims, "ApplicationCookie", ClaimsIdentity.DefaultNameClaimType, ClaimsIdentity.DefaultRoleClaimType);
-            // установка аутентификационных куки
-            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(id));
+                case PasswordVerificationResult.Failed:
+                    return new NotFoundResult();
+                case PasswordVerificationResult.SuccessRehashNeeded:
+                    return Content($"Need change password");
+                case PasswordVerificationResult.Success:
+                {
+                    // создаем один claim
+                    var claims = new List<Claim>
+                    {
+                        new Claim(ClaimsIdentity.DefaultNameClaimType, user.Login)
+                    };
+                    // создаем объект ClaimsIdentity
+                    ClaimsIdentity id = new ClaimsIdentity(claims, "ApplicationCookie", ClaimsIdentity.DefaultNameClaimType, ClaimsIdentity.DefaultRoleClaimType);
+                    // установка аутентификационных куки
+                    await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(id));
+                    return new OkResult();
+                }
+            }
+            return new BadRequestResult();
         }
  
         public async Task<IActionResult> Logout()
