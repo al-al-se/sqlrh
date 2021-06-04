@@ -90,7 +90,7 @@ namespace sqlrh_server.Controllers
 
         [Route("Login")]
         [HttpPost]
-        public async Task<IActionResult> Login([FromBody]LoginData d)
+        public async Task<IActionResult> Login([FromForm]LoginData d)
         {
             if (!String.IsNullOrEmpty(d.Login) && !String.IsNullOrEmpty(d.Password))
             {
@@ -114,7 +114,7 @@ namespace sqlrh_server.Controllers
 
         [Route("Register")]
         [HttpPost]    
-        public async Task<IActionResult> Register([FromBody]LoginData d)
+        public async Task<IActionResult> Register([FromForm]LoginData d)
         {
             if (!String.IsNullOrEmpty(d.Login) && !String.IsNullOrEmpty(d.Password))
             {
@@ -124,7 +124,7 @@ namespace sqlrh_server.Controllers
                 }
                 var n = new SqlrhUser(d.Login);
                 n.PasswordHash =  _PasswordHasher.HashPassword(n, d.Password);
-                new  CreatedResult(n.Name,
+                new  CreatedResult(n.Login,
                          await _repository.Add(n));              
             }
             return new BadRequestResult();
