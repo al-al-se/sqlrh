@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations;
 [Index("Id", IsUnique =true)]
 public class Shedule
 {
+    [Key]
     public int Id {get; set;}
 
     public Report ReportTemplate {get; set;}
@@ -18,7 +19,7 @@ public class Shedule
     bool SendByTelegram {get; set;}
 
     bool SendByViber {get; set;}
-    public DateTime Time;
+    public DateTime Time {get; set;}
 
     public int RepeatAtHourOfEveryDay {get; set;}
 

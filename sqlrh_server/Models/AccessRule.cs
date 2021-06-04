@@ -1,6 +1,13 @@
+using System;
+using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
+
+[Index("Id", IsUnique =true)]
 public class AccessRule
 {
-    public Report ReportTemplate;
+    [Key]
+    public int Id {get; set;}
+    public Report ReportTemplate {get; set;}
 
-    public SqlrhUser AdmittedUser;
+    public SqlrhUser AdmittedUser {get; set;}
 }

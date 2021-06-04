@@ -70,12 +70,22 @@ namespace sqlrh_server.Controllers
             }
         }
 
+        [Route("Login")]
         [HttpGet]
         public IActionResult Login()
         {
+            if (HttpContext.User.Claims.Count() == 0)
+            {
+                    return new ContentResult 
+                    {
+                        ContentType = "text/html",
+                        Content = "<div>Hello World</div>"
+                    };
+            }
             return Content(HttpContext.User.FindFirstValue(ClaimsIdentity.DefaultNameClaimType));
         }
 
+        [Route("Login")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(string login, string password)
@@ -94,6 +104,7 @@ namespace sqlrh_server.Controllers
             }
         }
 
+        [Route("Register")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(string login, string password)
@@ -137,6 +148,8 @@ namespace sqlrh_server.Controllers
             return new BadRequestResult();
         }
  
+        [Route("Logout")]
+        [HttpPost]
         public async Task<IActionResult> Logout()
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);

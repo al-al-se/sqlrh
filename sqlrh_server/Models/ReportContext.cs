@@ -21,17 +21,8 @@ public class ReportContext : DbContext, IReportRepository
     public ReportContext(DbContextOptions<ReportContext> options)
         : base(options)
     {
-        Database.EnsureCreated();
     }
 
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
-        modelBuilder.Entity<Report>().ToTable("Reports");
-        modelBuilder.Entity<ExternalDatabase>().ToTable("ExternalDatabases");
-        modelBuilder.Entity<AccessRule>().ToTable("Access");
-        modelBuilder.Entity<SqlrhUser>().ToTable("Users");
-        modelBuilder.Entity<Shedule>().ToTable("Shedule");
-    }
 
     public async  Task<int> GenerateNewId()
     {

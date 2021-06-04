@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Identity;
 
 namespace sqlrh_server
 {
@@ -30,12 +31,14 @@ namespace sqlrh_server
         {
             string connection = Configuration.GetConnectionString("DefaultConnection");
 
+            services.AddScoped<IPasswordHasher<SqlrhUser>,MyPasswordHasher>();
+
+            services.AddDbContext<IUserRepository,UserContext>(options => options.UseSqlite(connection));
+  
             services.AddDbContext<IReportRepository,ReportContext>(options => options.UseSqlite(connection));
            
             services.AddDbContext<IExternalDataBaseRepository,ExternalDataBaseContext>(options => options.UseSqlite(connection));
-
-            services.AddDbContext<IUserRepository,UserContext>(options => options.UseSqlite(connection));
-            
+          
             services.Configure<ReportBuilderOptions>(Configuration.GetSection(
                                         ReportBuilderOptions.SectionName));
                                         
