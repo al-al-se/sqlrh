@@ -31,6 +31,9 @@ namespace sqlrh_server
         {
             string connection = Configuration.GetConnectionString("DefaultConnection");
 
+            services.Configure<PasswordHasherOptions>(Configuration.GetSection(
+                                        PasswordHasherOptions.SectionName));
+
             services.AddScoped<IPasswordHasher<SqlrhUser>,MyPasswordHasher>();
 
             services.AddDbContext<IUserRepository,UserContext>(options => options.UseSqlite(connection));
