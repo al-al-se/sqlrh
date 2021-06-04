@@ -55,8 +55,20 @@ namespace sqlrh_server.Controllers
 
         [Route("Update")]
         [HttpPost]
-        public async Task<IActionResult> Update(SqlrhUser u)
+        [Authorize]
+        public async Task<IActionResult> Update([FromForm]SqlrhUser u)
         {
+            var user = await _repository.Get(User.Identity.Name);
+            if (!(user.Admin || user.Login == u.Login))
+            {
+                return new UnauthorizedResult();
+            }
+
+            if (!user.Admin)
+            {
+                u.Admin = false;
+            }
+
             if (await _repository.Contains(u.Login))
             {
                 return new  CreatedResult(u.Login,
@@ -70,8 +82,14 @@ namespace sqlrh_server.Controllers
 
         [Route("Delete")]
         [HttpDelete]
+        [Authorize]
         public async Task<IActionResult> Delete(string login)
         {
+            var user = await _repository.Get(User.Identity.Name);
+            if (!user.Admin)
+            {
+                return new UnauthorizedResult();
+            }
             if (await _repository.Contains(login))
             {
                 await _repository.Delete(login);
@@ -146,6 +164,14 @@ namespace sqlrh_server.Controllers
             }
             return new BadRequestResult();
         }
+
+        [Route("Logout")]
+        [HttpPost]
+        public async Task<IActionResult> Logout()
+        {
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            return RedirectToAction("Login", "User");
+        }
  
         private async Task<IActionResult> Authenticate(SqlrhUser user, string password)
         {
@@ -170,14 +196,6 @@ namespace sqlrh_server.Controllers
                 }
             }
             return new BadRequestResult();
-        }
- 
-        [Route("Logout")]
-        [HttpPost]
-        public async Task<IActionResult> Logout()
-        {
-            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            return RedirectToAction("Login", "User");
         }
     }
 }
