@@ -19,19 +19,19 @@ public class UserContext : DbContext, IUserRepository
         return r;
     }
 
-    public async Task<SqlrhUser> Get(int id)
+    public async Task<SqlrhUser> Get(string login)
     {
         try{
-            return await Users.FirstAsync(i => i.Id == id);
+            return await Users.FirstAsync(i => i.Login == login);
         } catch (InvalidOperationException)
         {
-            throw new InvalidOperationException($"User with Id = {id} not found");
+            throw new InvalidOperationException($"User with login {login} not found");
         }
     }
 
-    public async Task<bool> Contains(int id)
+    public async Task<bool> Contains(string login)
     {
-        return await Users.AnyAsync(i => i.Id == id);
+        return await Users.AnyAsync(i => i.Login == login);
     }
 
     public async Task<SqlrhUser> Add(SqlrhUser nu)
@@ -43,15 +43,15 @@ public class UserContext : DbContext, IUserRepository
 
     public async Task<SqlrhUser> Update(SqlrhUser u)
     {
-        var e = await Get(u.Id);
+        var e = await Get(u.Login);
         e.Copy(u);
         await SaveChangesAsync();
         return e;
     }
 
-    public async Task Delete(int id)
+    public async Task Delete(string login)
     {
-        var u = await Get(id);
+        var u = await Get(login);
         Users.Remove(u);
         await SaveChangesAsync();
     }

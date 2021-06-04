@@ -44,7 +44,7 @@ namespace sqlrh_server
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                 .AddCookie(options => //CookieAuthenticationOptions
                 {
-                    options.LoginPath = new Microsoft.AspNetCore.Http.PathString("/Account/Login");
+                    options.LoginPath = new Microsoft.AspNetCore.Http.PathString("/User/Login");
                 });
                    
             services.AddControllers();

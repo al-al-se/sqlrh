@@ -7,11 +7,11 @@ public interface IUserRepository
 
     Task<SqlrhUser> Add(SqlrhUser newUser);
 
-    Task<bool> Contains(int id);
+    Task<bool> Contains(string login);
 
-    Task<SqlrhUser> Get(int id);
+    Task<SqlrhUser> Get(string login);
 
     Task<SqlrhUser> Update(SqlrhUser u);
 
-    Task Delete(int id);
+    Task Delete(string login);
 }

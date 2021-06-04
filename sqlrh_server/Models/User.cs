@@ -2,13 +2,13 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 
-[Index("Id", IsUnique =true)]
+[Index("Login", IsUnique =true)]
 public class SqlrhUser
 {
     [Key]
-    public int Id {get; set;}
-
     public string Login {get; set;}
+
+    public string PasswordHash {get; set;}
 
     public bool Admin {get; set;}
 
@@ -20,9 +20,15 @@ public class SqlrhUser
 
     public string PhoneNumber {get; set;}
 
+    public SqlrhUser(string login)
+    {
+        Login = login;
+    }
+
     public void Copy(SqlrhUser other)
     {
         Name = other.Name;
+        Admin = other.Admin;
         EmailAddress = other.EmailAddress;
         XMPPAddress = other.XMPPAddress;
         PhoneNumber = other.PhoneNumber;
