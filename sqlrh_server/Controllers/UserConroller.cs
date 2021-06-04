@@ -1,3 +1,6 @@
+using System.Reflection.PortableExecutable;
+using System.Threading;
+using System.Runtime.Serialization;
 using System.ComponentModel;
 using System.Data.Common;
 using System;
@@ -11,6 +14,8 @@ using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using System.IO;
+using Microsoft.AspNetCore.Mvc;
 
 namespace sqlrh_server.Controllers
 {
@@ -76,26 +81,23 @@ namespace sqlrh_server.Controllers
         {
             if (HttpContext.User.Claims.Count() == 0)
             {
-                    return new ContentResult 
-                    {
-                        ContentType = "text/html",
-                        Content = "<div>Hello World</div>"
-                    };
+                string curDir = Directory.GetCurrentDirectory();
+                string loginFormPath = Path.Combine(Path.Combine(curDir,"Views"),"SimpleLoginForm.html");
+                return new PhysicalFileResult(loginFormPath,"text/html");
             }
             return Content(HttpContext.User.FindFirstValue(ClaimsIdentity.DefaultNameClaimType));
         }
 
         [Route("Login")]
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(string login, string password)
+        public async Task<IActionResult> Login([FromBody]LoginData d)
         {
-            if (String.IsNullOrEmpty(login) && String.IsNullOrEmpty(password))
+            if (!String.IsNullOrEmpty(d.Login) && !String.IsNullOrEmpty(d.Password))
             {
-                if (await _repository.Contains(login))
+                if (await _repository.Contains(d.Login))
                 {
-                    SqlrhUser user = await _repository.Get(login);
-                    return await Authenticate(user, password);
+                    SqlrhUser user = await _repository.Get(d.Login);
+                    return await Authenticate(user, d.Password);
                 } else{
                     return new NotFoundResult();
                 }
@@ -104,19 +106,24 @@ namespace sqlrh_server.Controllers
             }
         }
 
-        [Route("Register")]
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Register(string login, string password)
+        public class LoginData
         {
-            if (String.IsNullOrEmpty(login) && String.IsNullOrEmpty(password))
+            public string Login {get; set;}
+            public string Password {get; set;}
+        }
+
+        [Route("Register")]
+        [HttpPost]    
+        public async Task<IActionResult> Register([FromBody]LoginData d)
+        {
+            if (!String.IsNullOrEmpty(d.Login) && !String.IsNullOrEmpty(d.Password))
             {
-                if (await _repository.Contains(login))
+                if (await _repository.Contains(d.Login))
                 {
                     return new ConflictResult();
                 }
-                var n = new SqlrhUser(login);
-                n.PasswordHash =  _PasswordHasher.HashPassword(n, password);
+                var n = new SqlrhUser(d.Login);
+                n.PasswordHash =  _PasswordHasher.HashPassword(n, d.Password);
                 new  CreatedResult(n.Name,
                          await _repository.Add(n));              
             }

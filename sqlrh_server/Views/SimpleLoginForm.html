@@ -7,17 +7,29 @@
 </head>
 <body>
     <h1>SQLRH Login</h1><br>
-    <form action="Login" method="post">    
+    <h3>Login:</h3><br>
+    <form action="/User/Login" method="post">    
         <div class="container">
           <label for="uname"><b>Пользователь</b></label>
-          <input type="text" placeholder="Введите имя" name="uname" required>
+          <input type="text" placeholder="Введите имя" name="login" required>
       
           <label for="psw"><b>Пароль</b></label>
-          <input type="password" placeholder="Введите пароль" name="psw" required>
+          <input type="password" placeholder="Введите пароль" name="password" required>
       
           <button type="submit">Вход</button>
         </div>
       </form> 
-
+      <h3>Or Register:</h3><br>
+      <form action="/User/Register" method="post">    
+        <div class="container">
+          <label for="uname"><b>Пользователь</b></label>
+          <input type="text" placeholder="Введите имя" name="login" required>
+      
+          <label for="psw"><b>Пароль</b></label>
+          <input type="password" placeholder="Введите пароль" name="password" required>
+      
+          <button type="submit">Создать</button>
+        </div>
+      </form> 
 </body>
 </html>
