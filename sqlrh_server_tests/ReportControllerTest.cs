@@ -2,6 +2,7 @@ using Xunit;
 using Moq;
 using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc;
 
 class ReportControllerTest
 {
@@ -24,7 +25,7 @@ class ReportControllerTest
     
 
     [Fact]
-    void Test()
+    void AddNewTest()
     {
         var reports = new ReportContext(reportContextOptions);
         var users = new UserContext(userContextOptions);
@@ -32,5 +33,15 @@ class ReportControllerTest
 
         var rc = new sqlrh_server.Controllers.ReportsController(
                         LoggerMock.Object,reports, users, builderServiceMock.Object);
+
+        string name = "r";
+        //authorize?
+        var t = rc.AddNew(name);
+        t.Wait();
+        Assert.True(t.Result is CreatedResult);
+        var created = t.Result as CreatedResult;
+        Assert.True(created.Value is Report);
+        var createdReport  = created.Value as Report;
+        Assert.Equal(name,createdReport.Name);
     }
 }
