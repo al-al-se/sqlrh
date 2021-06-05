@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 
-class ReportControllerTest
+public class ReportControllerTest
 {
     DbContextOptions<ReportContext> reportContextOptions;
 
@@ -27,16 +27,24 @@ class ReportControllerTest
     [Fact]
     void AddNewTest()
     {
-        var reports = new ReportContext(reportContextOptions);
-        var users = new UserContext(userContextOptions);
+        IReportRepository reports = new ReportContext(reportContextOptions);
+        IUserRepository users = new UserContext(userContextOptions);
         var builderServiceMock = new Mock<IReportBuilderService>();
 
         var rc = new sqlrh_server.Controllers.ReportsController(
                         LoggerMock.Object,reports, users, builderServiceMock.Object);
 
+        string admin = "a";
+        users.Add(new SqlrhUser(admin) {Admin = true});
+        string user = "u";
+        users.Add(new SqlrhUser(user) {Admin = false});
+
         string name = "r";
-        //authorize?
-        var t = rc.AddNew(name);
+        var t = rc.AddNew(user,name);
+        t.Wait();
+        Assert.True(t.Result is UnauthorizedResult);
+        
+        t = rc.AddNew(admin,name);
         t.Wait();
         Assert.True(t.Result is CreatedResult);
         var created = t.Result as CreatedResult;

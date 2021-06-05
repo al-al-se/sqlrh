@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using System;
 using Microsoft.Extensions.Logging;
 
-class ReportBuilderService : IReportBuilderService
+public class ReportBuilderService : IReportBuilderService
 {
     protected readonly ReportBuilderOptions _options;
 

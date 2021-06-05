@@ -46,7 +46,12 @@ namespace sqlrh_server.Controllers
         [Authorize]
         public async Task<IActionResult> AddNew(string name)
         {
-            if (!await _users.IsUserAdmin(User.Identity.Name)) 
+            return await AddNew(User.Identity.Name, name);
+        }
+
+        public async Task<IActionResult> AddNew(string login, string name)
+        {
+            if (!await _users.IsUserAdmin(login)) 
                 return new UnauthorizedResult();
             return new  CreatedResult(name, await _repository.Add(name));
         }
