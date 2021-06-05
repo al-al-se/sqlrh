@@ -9,6 +9,8 @@ public interface IUserRepository
 
     Task<SqlrhUser> Add(SqlrhUser newUser);
 
+    Task<bool> IsUserAdmin(string userLogin);
+
     Task<bool> Contains(string login);
 
     Task<SqlrhUser> Get(string login);

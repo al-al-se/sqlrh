@@ -33,10 +33,15 @@ public class UserContext : DbContext, IUserRepository
         return r;
     }
 
+    public static async Task<SqlrhUser> Get(DbSet<SqlrhUser> users, string login)
+    {
+        return await users.FirstAsync(i => i.Login == login);
+    }
+
     public async Task<SqlrhUser> Get(string login)
     {
         try{
-            return await Users.FirstAsync(i => i.Login == login);
+            return await Get(Users,login);
         } catch (InvalidOperationException)
         {
             throw new InvalidOperationException($"User with login {login} not found");
@@ -46,6 +51,16 @@ public class UserContext : DbContext, IUserRepository
     public async Task<bool> Contains(string login)
     {
         return await Users.AnyAsync(i => i.Login == login);
+    }
+
+    public async Task<bool> IsUserAdmin(string userLogin)
+    {
+        return await IsUserAdmin(Users,userLogin);
+    }
+
+    public static async Task<bool> IsUserAdmin(DbSet<SqlrhUser> users, string userLogin)
+    {
+        return (await users.FirstAsync(i => i.Login == userLogin)).Admin;
     }
 
     public async Task<SqlrhUser> Add(SqlrhUser nu)

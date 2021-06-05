@@ -8,21 +8,37 @@ public class ReportContext : DbContext, IReportRepository
 {
     private DbSet<Report> Reports { get; set; }
 
+    private DbSet<SqlrhUser> Users {get; set;}
+
     private DbSet<AccessRule> Access {get; set;}
 
     private DbSet<Shedule> Shedules {get; set;}
 
-    public  async Task<IEnumerable<Report>> GetAll()
-    {
-        var r = await Reports.ToListAsync();
-        return r;
-    }
 
     public ReportContext(DbContextOptions<ReportContext> options)
         : base(options)
     {
     }
 
+    public async Task<bool> IsReportAvailableToUser(int id, string login)
+    {
+        if (await UserContext.IsUserAdmin(Users,login)) return true;
+
+        if (await Access.AnyAsync(
+                    a => (a.ReportTemplate.Id == id && a.AdmittedUser.Login == login)))
+            return true;
+        
+        return false;
+    }
+
+    public  async Task<IEnumerable<Report>> GetAll(string login)
+    {
+        if (await UserContext.IsUserAdmin(Users,login)) 
+                 return await Reports.ToListAsync();
+        
+        return Access.Where(a => a.AdmittedUser.Login == login)
+                        .Select(a => a.ReportTemplate);
+    }
 
     public async  Task<int> GenerateNewId()
     {
@@ -85,5 +101,24 @@ public class ReportContext : DbContext, IReportRepository
         var b = await GetReport(id);
         Reports.Remove(b);
         await SaveChangesAsync();
+    }
+
+    public async Task<AccessRule> Allow(int id, string login)
+    {
+        var report = await GetReport(id);
+        var user = await UserContext.Get(Users,login);
+        var n = new AccessRule() {ReportTemplate = report, AdmittedUser = user});
+        await Access.AddAsync(n);
+        await SaveChangesAsync();
+        return n;
+    }
+
+    public async Task<AccessRule> Disallow(int id, string login)
+    {
+        var ar = await Access.FirstAsync(
+            a => a.ReportTemplate.Id == id && a.AdmittedUser.Login == login);
+        Access.Remove(ar);
+        await SaveChangesAsync();
+        return ar;
     }
 }

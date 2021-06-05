@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 
 namespace sqlrh_server.Controllers
 {
@@ -17,35 +18,47 @@ namespace sqlrh_server.Controllers
 
         private readonly IReportRepository _repository;
 
+        private readonly IUserRepository _users;
+
         private readonly IReportBuilderService _builder;
 
         public ReportsController(ILogger<ReportsController> logger,
                                  IReportRepository r,
+                                 IUserRepository u,
                                  IReportBuilderService b)
         {
             _logger = logger;
             _repository = r;
             _builder = b;
+            _users = u;
         }
 
         [Route("GetAll")]
         [HttpGet]
+        [Authorize]
         public async Task<IEnumerable<Report>> GetAll()
         {
-            return await _repository.GetAll();
+            return await _repository.GetAll(User.Identity.Name);
         }
 
         [Route("AddNew")]
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> AddNew(string name)
         {
+            if (!await _users.IsUserAdmin(User.Identity.Name)) 
+                return new UnauthorizedResult();
             return new  CreatedResult(name, await _repository.Add(name));
         }
 
         [Route("LoadFile")]
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> LoadFile(int id, IFormFile uploadingFile)
         {
+            if (!await _users.IsUserAdmin(User.Identity.Name)) 
+                return new UnauthorizedResult();
+            
             if (uploadingFile != null)
             {
                 if (await _repository.ContainsId(id))
@@ -68,8 +81,12 @@ namespace sqlrh_server.Controllers
 
         [Route("Execute")]
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> Execute(int id)
         {
+            if (!await _repository.IsReportAvailableToUser(id, User.Identity.Name)) 
+                        return new UnauthorizedResult();
+            
             if (await _repository.ContainsId(id))
             {
                 var r = await _repository.GetReport(id);
@@ -99,6 +116,7 @@ namespace sqlrh_server.Controllers
 
         [Route("GetBuildedReport")]
         [HttpPost]
+        [Authorize]
         public IActionResult GetBuildedReport(string path)
         {
             if (_builder.CheckReportStartBuilding(path))
@@ -114,8 +132,12 @@ namespace sqlrh_server.Controllers
 
         [Route("DeleteReport")]
         [HttpDelete]
+        [Authorize]
         public async Task<IActionResult> Delete(int id)
         {
+            if (!await _users.IsUserAdmin(User.Identity.Name)) 
+                return new UnauthorizedResult();
+            
             if (await _repository.ContainsId(id))
             {
                 await _repository.Delete(id);
@@ -125,6 +147,38 @@ namespace sqlrh_server.Controllers
                 _logger.LogError($"Report id = {id} not found");
                 return new  NotFoundResult();
             }
+        }
+
+        [Route("AllowUser")]
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> AllowUser(int id, string login)
+        {
+            if (! await _users.IsUserAdmin(User.Identity.Name))
+                 return new UnauthorizedResult();
+            
+            if (! await _repository.ContainsId(id)) return new NotFoundResult();
+            
+            if (! await _users.Contains(login)) return new NotFoundResult();
+
+            return new CreatedResult("The user is allowed to the report",
+                         _repository.Allow(id,login));
+        }
+
+        [Route("AllowUser")]
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> DisallowUser(int id, string login)
+        {
+            if (! await _users.IsUserAdmin(User.Identity.Name))
+                 return new UnauthorizedResult();
+            
+            if (! await _repository.ContainsId(id)) return new NotFoundResult();
+            
+            if (! await _users.Contains(login)) return new NotFoundResult();
+
+            return new CreatedResult("The user is not allowed to the report",
+                         _repository.Disallow(id,login));
         }
     }
 }
