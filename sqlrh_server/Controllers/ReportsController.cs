@@ -166,7 +166,7 @@ namespace sqlrh_server.Controllers
                          _repository.Allow(id,login));
         }
 
-        [Route("AllowUser")]
+        [Route("DisallowUser")]
         [HttpPost]
         [Authorize]
         public async Task<IActionResult> DisallowUser(int id, string login)
