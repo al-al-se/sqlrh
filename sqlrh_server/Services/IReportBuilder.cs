@@ -12,7 +12,10 @@ public interface IReportBuilderService
 
     Task<string> SaveUploadingReportTemplate(IFormFile uploadingFile);
 
-    Task<string> StartReportBuilding(string reportTemplatePath, Action<string> onReportFinished = null);
+    Task<string> StartReportBuilding(
+        string reportTemplatePath, string login, Action<string> onReportFinished = null);
+
+    bool CheckUserAccess(string reportPath, string login);
 
     bool CheckReportStartBuilding(string reportPath);
 

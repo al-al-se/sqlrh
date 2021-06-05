@@ -90,7 +90,7 @@ namespace sqlrh_server.Controllers
             if (await _repository.ContainsId(id))
             {
                 var r = await _repository.GetReport(id);
-                var dest = await _builder.StartReportBuilding(r.FilePath);
+                var dest = await _builder.StartReportBuilding(r.FilePath,User.Identity.Name);
 
                 return new  CreatedResult(r.Name, dest);
             } else
@@ -119,15 +119,16 @@ namespace sqlrh_server.Controllers
         [Authorize]
         public IActionResult GetBuildedReport(string path)
         {
-            if (_builder.CheckReportStartBuilding(path))
-            {
-                if (_builder.CheckReportFinished(path))
-                {
-                    return new PhysicalFileResult(path,MimeType(path));
-                }
+            if (!_builder.CheckUserAccess(path, User.Identity.Name))
+                return new UnauthorizedResult();
+
+            if (!_builder.CheckReportStartBuilding(path))
+                return new NotFoundResult();
+            
+            if (!_builder.CheckReportFinished(path))
                 return new StatusCodeResult(102);//102 Processing («идёт обработка»);
-            }
-            return new NotFoundResult();
+            
+            return new PhysicalFileResult(path,MimeType(path));    
         }
 
         [Route("DeleteReport")]

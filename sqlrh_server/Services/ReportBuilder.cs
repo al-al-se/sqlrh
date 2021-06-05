@@ -82,12 +82,18 @@ class ReportBuilderService : IReportBuilderService
         }
     }
 
-    public async Task<string> StartReportBuilding(string reportTemplatePath, Action<string> onReportFinished = null)
+    public async Task<string> StartReportBuilding(
+        string reportTemplatePath, string login, Action<string> onReportFinished = null)
     {
         string name = Path.GetFileNameWithoutExtension(reportTemplatePath);
         string ext = Path.GetExtension(reportTemplatePath);
         string reportName = $"{name}_{DateTime.Now.ToString("yyyyMMdd_hhmmss")}{ext}";
-        string fullReportName = Path.Combine(TempPath,reportName);
+        string userTempPath = Path.ChangeExtension(TempPath,login);
+        if (!Directory.Exists(userTempPath))
+        {
+            Directory.CreateDirectory(userTempPath);
+        }
+        string fullReportName = Path.Combine(userTempPath,reportName);
         string fullTempName = GetTemp(fullReportName);
 
         var task = (await GetBuilder(ext)).
@@ -106,6 +112,16 @@ class ReportBuilderService : IReportBuilderService
     public static string GetTemp(string f)
     {
         return $"{f}.tmp";
+    }
+
+    public bool CheckUserAccess(string reportPath, string login)
+    {
+        var dir = Path.GetDirectoryName(reportPath);
+        int tempPathLen = TempPath.Length;
+        if (dir.Substring(0,tempPathLen) != TempPath) return false;
+        string owner = dir.Substring(tempPathLen + 1);
+        if (owner != login) return false;
+        return true;
     }
     
     public bool CheckReportStartBuilding(string reportPath)
