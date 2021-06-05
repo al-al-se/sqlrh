@@ -40,24 +40,21 @@ public class ReportContext : DbContext, IReportRepository
                         .Select(a => a.ReportTemplate);
     }
 
-    public async  Task<int> GenerateNewId()
+    public delegate Task<bool> ContainsDelegate(int id);
+
+    protected Random RandomGenerator = new Random();
+    public async  Task<int> GenerateNewId(ContainsDelegate contains)
     {
         // sqlite has not sequences
-        int max = await Reports.MaxAsync(r => r.Id);
-        int count = await Reports.CountAsync();
-
-        if (2 * count < max)
+        for (int i = 0; i < 5000; i++)
         {
-            for (int i = 0; i < max; i++)
+            int v = RandomGenerator.Next();
+            if (!await contains(v))
             {
-                if (!await Reports.AnyAsync(r => r.Id == i))
-                {
-                    return i;
-                }
+                return v;
             }
         }
-
-        return max + 1;
+        throw new ArgumentOutOfRangeException();
     }
 
 
@@ -71,7 +68,7 @@ public class ReportContext : DbContext, IReportRepository
         var n = ( await Reports.AddAsync(
                                 new Report() 
                                 {
-                                    Id = await GenerateNewId(),
+                                    Id = await GenerateNewId(ContainsId),
                                     Name = name
                                 })).Entity;
         await SaveChangesAsync();
@@ -103,11 +100,21 @@ public class ReportContext : DbContext, IReportRepository
         await SaveChangesAsync();
     }
 
+    public async Task<bool> CantainsAccessRuleId(int id)
+    {
+        return await Access.AnyAsync(a => a.Id == id);
+    }
+
     public async Task<AccessRule> Allow(int id, string login)
     {
         var report = await GetReport(id);
         var user = await UserContext.Get(Users,login);
-        var n = new AccessRule() {ReportTemplate = report, AdmittedUser = user});
+        var n = new AccessRule() 
+        {
+            Id = await GenerateNewId(CantainsAccessRuleId),
+            ReportTemplate = report,
+            AdmittedUser = user
+        };
         await Access.AddAsync(n);
         await SaveChangesAsync();
         return n;
