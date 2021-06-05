@@ -101,15 +101,22 @@ namespace sqlrh_server.Controllers
             }
         }
 
+        [Route("LoginForm")]
+        [HttpGet]
+        public IActionResult LoginForm()
+        {
+                string curDir = Directory.GetCurrentDirectory();
+                string loginFormPath = Path.Combine(Path.Combine(curDir,"Views"),"SimpleLoginForm.html");
+                return new PhysicalFileResult(loginFormPath,"text/html");
+        }
+
         [Route("Login")]
         [HttpGet]
         public IActionResult Login()
         {
             if (HttpContext.User.Claims.Count() == 0)
             {
-                string curDir = Directory.GetCurrentDirectory();
-                string loginFormPath = Path.Combine(Path.Combine(curDir,"Views"),"SimpleLoginForm.html");
-                return new PhysicalFileResult(loginFormPath,"text/html");
+                return Content("User is not authenticated");
             }
             return Content(HttpContext.User.FindFirstValue(ClaimsIdentity.DefaultNameClaimType));
         }
